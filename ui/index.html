@@ -6,100 +6,48 @@
     <title>Lesson 8 — Shop DB</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --bg: #f4f4f5;
-            --surface: #ffffff;
-            --border: #e4e4e7;
-            --text-primary: #18181b;
-            --text-secondary: #71717a;
-            --text-muted: #a1a1aa;
-            --accent: #18181b;
-            --accent-fg: #ffffff;
-            --radius: 10px;
-            --radius-sm: 6px;
-            --green: #16a34a;
-            --green-bg: #dcfce7;
-            --red: #dc2626;
-            --red-bg: #fee2e2;
-            --amber-bg: #fef9c3;
-            --amber: #854d0e;
-            --blue: #1d4ed8;
-            --blue-bg: #dbeafe;
-            --mono: 'Menlo', 'Consolas', 'Monaco', monospace;
+            --bg: #f4f4f5; --surface: #ffffff; --border: #e4e4e7;
+            --text-primary: #18181b; --text-secondary: #71717a; --text-muted: #a1a1aa;
+            --accent: #18181b; --accent-fg: #ffffff;
+            --radius: 10px; --radius-sm: 6px;
+            --green: #16a34a; --green-bg: #dcfce7;
+            --red: #dc2626;   --red-bg: #fee2e2;
+            --amber: #854d0e; --amber-bg: #fef9c3;
+            --blue: #1d4ed8;  --blue-bg: #dbeafe;
+            --mono: 'Menlo','Consolas','Monaco',monospace;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-size: 14px;
-            background: var(--bg);
-            color: var(--text-primary);
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; background: var(--bg); color: var(--text-primary); line-height: 1.5; min-height: 100vh; }
         .layout { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-
-        /* Header */
         .header { margin-bottom: 2rem; }
         .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
-        .header p { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+        .header p  { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
 
         /* Tabs */
-        .tabs { display: flex; gap: 2px; background: var(--border); border-radius: var(--radius); padding: 3px; margin-bottom: 1.5rem; width: fit-content; }
-        .tab-btn { padding: 6px 16px; border: none; border-radius: 8px; background: transparent; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; white-space: nowrap; }
+        .tabs { display: flex; gap: 2px; background: var(--border); border-radius: var(--radius); padding: 3px; margin-bottom: 1.5rem; flex-wrap: wrap; width: fit-content; }
+        .tab-btn { padding: 6px 14px; border: none; border-radius: 8px; background: transparent; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; white-space: nowrap; }
         .tab-btn:hover { color: var(--text-primary); }
         .tab-btn.active { background: var(--surface); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-
-        /* Panels */
-        .panel { display: none; }
-        .panel.active { display: block; }
+        .panel { display: none; } .panel.active { display: block; }
 
         /* Card */
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
         .card-title { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary); }
-        .card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 400; }
+        .card-desc  { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-weight: 400; }
 
         /* Form */
         .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
         label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
-        input, select {
-            height: 36px; padding: 0 10px;
-            border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 13px; font-family: inherit;
-            background: var(--surface); color: var(--text-primary);
-            transition: border-color .15s;
-            min-width: 0;
-        }
+        input, select { height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text-primary); transition: border-color .15s; min-width: 0; }
         input:focus, select:focus { outline: none; border-color: #a1a1aa; }
         input::placeholder { color: var(--text-muted); }
 
         /* Buttons */
-        .btn {
-            height: 36px; padding: 0 16px;
-            background: var(--accent); color: var(--accent-fg);
-            border: none; border-radius: var(--radius-sm);
-            font-size: 13px; font-weight: 500; font-family: inherit;
-            cursor: pointer; white-space: nowrap;
-            transition: opacity .15s;
-        }
-        .btn:hover { opacity: .85; }
-        .btn:active { opacity: .7; }
-        .btn-ghost {
-            height: 32px; padding: 0 12px;
-            background: transparent; color: var(--text-secondary);
-            border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 12px; font-family: inherit;
-            cursor: pointer; transition: all .15s;
-        }
+        .btn { height: 36px; padding: 0 16px; background: var(--accent); color: var(--accent-fg); border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+        .btn:hover { opacity: .85; } .btn:active { opacity: .7; }
+        .btn-ghost { height: 32px; padding: 0 12px; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; cursor: pointer; transition: all .15s; }
         .btn-ghost:hover { border-color: #a1a1aa; color: var(--text-primary); }
-        .btn-chip {
-            padding: 4px 12px; height: auto;
-            background: var(--bg); color: var(--text-secondary);
-            border: 1px solid var(--border); border-radius: 20px;
-            font-size: 12px; font-family: inherit;
-            cursor: pointer; transition: all .15s;
-        }
+        .btn-chip { padding: 4px 12px; height: auto; background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; font-family: inherit; cursor: pointer; transition: all .15s; }
         .btn-chip:hover { background: var(--surface); border-color: #a1a1aa; color: var(--text-primary); }
 
         /* Table */
@@ -112,69 +60,251 @@
 
         /* Badges */
         .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .badge-paid    { background: var(--green-bg); color: var(--green); }
-        .badge-pending { background: var(--amber-bg); color: var(--amber); }
-        .badge-cancelled { background: var(--red-bg);  color: var(--red); }
+        .badge-paid     { background: var(--green-bg); color: var(--green); }
+        .badge-pending  { background: var(--amber-bg); color: var(--amber); }
+        .badge-cancelled{ background: var(--red-bg);   color: var(--red); }
         .badge-fk { background: var(--blue-bg); color: var(--blue); font-family: var(--mono); font-size: 10px; }
 
         /* SQL editor */
-        .sql-editor {
-            width: 100%; min-height: 110px;
-            font-family: var(--mono); font-size: 12.5px; line-height: 1.7;
-            padding: 10px 12px;
-            border: 1px solid var(--border); border-radius: var(--radius-sm);
-            background: #fafafa; color: var(--text-primary);
-            resize: vertical;
-        }
+        .sql-editor { width: 100%; min-height: 110px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fafafa; color: var(--text-primary); resize: vertical; }
         .sql-editor:focus { outline: none; border-color: #a1a1aa; }
         .sql-editor[readonly] { background: var(--bg); cursor: default; }
 
-        /* Query chips group */
+        /* Chip groups */
         .chip-group { margin-bottom: .75rem; }
         .chip-group-label { font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
         .chip-group-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
         /* SQL result */
         .sql-result { margin-top: .75rem; }
-        .result-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
+        .result-meta  { font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; }
         .result-empty { font-size: 13px; color: var(--text-secondary); font-style: italic; padding: 8px 0; }
         .result-error { font-size: 13px; color: var(--red); background: var(--red-bg); border-radius: var(--radius-sm); padding: 8px 12px; }
 
-        /* QA status */
-        .qa-status { font-size: 13px; font-weight: 600; }
-        .qa-pass { color: var(--green); }
-        .qa-fail { color: var(--red); }
-
-        /* Divider */
-        .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
-
         /* Helpers */
+        .qa-status { font-size: 13px; font-weight: 600; }
+        .qa-pass { color: var(--green); } .qa-fail { color: var(--red); }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
         .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
         .flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .flex-gap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .null-val { color: var(--text-muted); font-style: italic; }
         .mono { font-family: var(--mono); font-size: 12px; }
+
+        /* Overview */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin-bottom: 1rem; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; }
+        .stat-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+        .stat-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .chart-bar-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .chart-bar-row  { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .chart-bar-label{ width: 90px; color: var(--text-secondary); text-align: right; white-space: nowrap; font-size: 12px; }
+        .chart-bar-track{ flex: 1; background: var(--bg); border-radius: 4px; height: 22px; overflow: hidden; }
+        .chart-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: #fff; transition: width .6s ease; min-width: 2px; }
+        .chart-bar-val  { width: 50px; font-size: 12px; color: var(--text-secondary); }
+        .schema-wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center; }
+        .schema-table { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .schema-thead { background: var(--bg); padding: 8px 14px; font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+        .schema-row { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border); font-size: 12px; font-family: var(--mono); }
+        .schema-row:last-child { border-bottom: none; }
+        .pk-badge { font-size: 9px; font-weight: 800; background: #dbeafe; color: #1d4ed8; border-radius: 3px; padding: 1px 5px; }
+        .fk-badge { font-size: 9px; font-weight: 800; background: #fef9c3; color: #854d0e; border-radius: 3px; padding: 1px 5px; }
+        .uq-badge { font-size: 9px; font-weight: 800; background: #dcfce7; color: #16a34a; border-radius: 3px; padding: 1px 5px; }
+        .schema-arrow { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 12px; }
+        .arrow-line { width: 60px; height: 2px; background: var(--border); position: relative; }
+        .arrow-line::after { content: '▶'; position: absolute; right: -8px; top: -9px; font-size: 12px; color: var(--text-muted); }
+        .arrow-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+        .flow-wrap { display: flex; align-items: stretch; gap: 0; }
+        .flow-node { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1rem; flex: 1; text-align: center; }
+        .flow-node.active-node { border-color: #3b82f6; box-shadow: 0 0 0 3px #dbeafe; }
+        .flow-node-icon  { font-size: 28px; margin-bottom: 6px; }
+        .flow-node-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .flow-node-desc  { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+        .flow-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 6px; gap: 4px; }
+        .flow-arrow-line { width: 32px; height: 2px; background: var(--border); position: relative; }
+        .flow-arrow-line::after { content: '▶'; position: absolute; right: -8px; top: -9px; font-size: 12px; color: var(--text-muted); }
+        .flow-packet { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; position: absolute; top: 50%; left: 0; transform: translateY(-50%); opacity: 0; }
+        .flow-log { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; font-family: var(--mono); font-size: 11px; line-height: 1.9; max-height: 130px; overflow-y: auto; margin-top: .75rem; }
+        .log-entry { display: flex; gap: 8px; }
+        .log-time   { color: var(--text-muted); white-space: nowrap; }
+        .log-method { font-weight: 700; width: 52px; }
+        .log-GET    { color: #16a34a; } .log-POST  { color: #1d4ed8; }
+        .log-PUT    { color: #d97706; } .log-PATCH { color: #7c3aed; } .log-DELETE { color: #dc2626; }
+        .log-path   { color: var(--text-secondary); flex: 1; }
+        .endpoint-grid { display: flex; flex-direction: column; gap: 6px; }
+        .endpoint-row  { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg); border-radius: var(--radius-sm); font-size: 12px; font-family: var(--mono); }
+        .method-badge  { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; min-width: 52px; text-align: center; }
+        .m-GET    { background: #dcfce7; color: #166534; } .m-POST  { background: #dbeafe; color: #1e40af; }
+        .m-PUT    { background: #fef9c3; color: #854d0e; } .m-PATCH { background: #ede9fe; color: #5b21b6; }
+        .m-DELETE { background: #fee2e2; color: #991b1b; }
+        .endpoint-path { color: var(--text-primary); flex: 1; }
+        .endpoint-desc { color: var(--text-muted); font-family: sans-serif; font-size: 11px; }
+        @keyframes packetMove { 0%{left:0;opacity:1} 100%{left:100%;opacity:0} }
+
+        /* API Tester */
+        .pm-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+        .pm-method { height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; font-family: inherit; background: var(--bg); cursor: pointer; width: 110px; }
+        .pm-url { height: 36px; flex: 1; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: var(--mono); background: var(--surface); color: var(--text-primary); }
+        .pm-url:focus { outline: none; border-color: #a1a1aa; }
+        .pm-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        .pm-tab { padding: 6px 14px; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+        .pm-tab.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+        .pm-panel { display: none; } .pm-panel.active { display: block; }
+        .pm-body-area { width: 100%; min-height: 90px; font-family: var(--mono); font-size: 12.5px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: #fafafa; color: var(--text-primary); resize: vertical; line-height: 1.6; }
+        .pm-body-area:focus { outline: none; border-color: #a1a1aa; }
+        .pm-header-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+        .pm-header-row input { height: 32px; flex: 1; padding: 0 8px; font-size: 12px; font-family: var(--mono); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); }
+        .pm-remove { width: 28px; height: 28px; border: none; background: none; color: var(--text-muted); cursor: pointer; font-size: 16px; border-radius: 4px; }
+        .pm-remove:hover { background: var(--red-bg); color: var(--red); }
+        .res-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+        .res-2xx { background: var(--green-bg); color: var(--green); }
+        .res-4xx { background: var(--red-bg);   color: var(--red); }
+        .res-5xx { background: var(--red-bg);   color: var(--red); }
+        .res-meta { display: flex; gap: 16px; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); }
+        .res-section { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text-muted); margin: 10px 0 6px; }
+        .res-headers-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+        .res-headers-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); }
+        .res-headers-table td:first-child { color: var(--text-secondary); width: 40%; }
+        .res-body-pre { background: var(--bg); border-radius: var(--radius-sm); padding: 12px; font-family: var(--mono); font-size: 12px; line-height: 1.7; overflow-x: auto; white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow-y: auto; }
+        .quick-chip { padding: 3px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; font-size: 11px; font-family: var(--mono); cursor: pointer; color: var(--text-secondary); white-space: nowrap; }
+        .quick-chip:hover { border-color: #a1a1aa; color: var(--text-primary); }
     </style>
 </head>
 <body>
 <div class="layout">
 
     <div class="header">
-        <h1>🛒 Lesson 8 — Database</h1>
+        <h1>🛒 Lesson 8 — Shop Database</h1>
         <p>Customer &amp; Order relationships · Primary Keys · Foreign Keys · JOIN queries</p>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('customers', this)">Customers</button>
-        <button class="tab-btn" onclick="switchTab('orders', this)">Orders</button>
-        <button class="tab-btn" onclick="switchTab('sql', this)">SQL Runner</button>
-        <button class="tab-btn" onclick="switchTab('update', this)">Update</button>
-        <button class="tab-btn" onclick="switchTab('qa', this)">Query Lab</button>
+        <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+        <button class="tab-btn" onclick="switchTab('customers',this)">Customers</button>
+        <button class="tab-btn" onclick="switchTab('orders',this)">Orders</button>
+        <button class="tab-btn" onclick="switchTab('sql',this)">SQL Runner</button>
+        <button class="tab-btn" onclick="switchTab('update',this)">Update</button>
+        <button class="tab-btn" onclick="switchTab('postman',this)">API Tester</button>
+        <button class="tab-btn" onclick="switchTab('qa',this)">Query Lab</button>
     </div>
 
-    <!-- ═══════════════ CUSTOMERS ═══════════════ -->
-    <div id="tab-customers" class="panel active">
+    <!-- ═══ OVERVIEW ═══ -->
+    <div id="tab-overview" class="panel active">
+        <div class="card">
+            <div class="card-title">📊 Live Dashboard</div>
+            <div class="stat-grid">
+                <div class="stat-card"><div class="stat-label">Total Customers</div><div class="stat-value" id="ov-customers">—</div><div class="stat-sub" id="ov-customers-sub"></div></div>
+                <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-value" id="ov-orders">—</div><div class="stat-sub" id="ov-orders-sub"></div></div>
+                <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value" id="ov-revenue">—</div><div class="stat-sub">paid orders only</div></div>
+                <div class="stat-card"><div class="stat-label">Avg Order Value</div><div class="stat-value" id="ov-avg">—</div><div class="stat-sub">across all orders</div></div>
+            </div>
+            <div style="margin-top:.5rem">
+                <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px">Orders by status</div>
+                <div class="chart-bar-wrap" id="ov-status-chart"></div>
+            </div>
+            <div style="margin-top:1.25rem">
+                <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px">Top customers by spend</div>
+                <div class="chart-bar-wrap" id="ov-top-customers"></div>
+            </div>
+        </div>
 
+        <div class="card">
+            <div class="card-title">🗄️ DB Relationship Map</div>
+            <div class="schema-wrap">
+                <div class="schema-table">
+                    <div class="schema-thead">customers</div>
+                    <div class="schema-row"><span class="pk-badge">PK</span> id INTEGER</div>
+                    <div class="schema-row"><span class="uq-badge">UQ</span> email TEXT</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">name TEXT</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">created_at TEXT</div>
+                </div>
+                <div class="schema-arrow">
+                    <div class="arrow-label">1</div>
+                    <div class="arrow-line"></div>
+                    <div class="arrow-label" style="margin-top:4px">N</div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;line-height:1.4">One customer<br>many orders</div>
+                </div>
+                <div class="schema-table">
+                    <div class="schema-thead">orders</div>
+                    <div class="schema-row"><span class="pk-badge">PK</span> id INTEGER</div>
+                    <div class="schema-row"><span class="fk-badge">FK</span> customer_id → customers.id</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">product TEXT</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">amount REAL</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">status TEXT</div>
+                    <div class="schema-row" style="color:var(--text-secondary)">created_at TEXT</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:1rem;flex-wrap:wrap">
+                <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)"><span class="pk-badge">PK</span> Primary Key</span>
+                <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)"><span class="fk-badge">FK</span> Foreign Key</span>
+                <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary)"><span class="uq-badge">UQ</span> Unique constraint</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">⚡ Live Request Flow</div>
+            <div class="flow-wrap">
+                <div class="flow-node" id="flow-ui">
+                    <div class="flow-node-icon">🖥️</div>
+                    <div class="flow-node-title">Browser UI</div>
+                    <div class="flow-node-desc">index.html<br>fetch() calls</div>
+                </div>
+                <div class="flow-arrow">
+                    <div class="flow-arrow-line" style="position:relative"><div class="flow-packet" id="flow-pkt-1"></div></div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">HTTP</div>
+                </div>
+                <div class="flow-node" id="flow-api">
+                    <div class="flow-node-icon">⚙️</div>
+                    <div class="flow-node-title">Express API</div>
+                    <div class="flow-node-desc">:3000<br>Routes + validation</div>
+                </div>
+                <div class="flow-arrow">
+                    <div class="flow-arrow-line" style="position:relative"><div class="flow-packet" id="flow-pkt-2"></div></div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">sql.js</div>
+                </div>
+                <div class="flow-node" id="flow-db">
+                    <div class="flow-node-icon">🗄️</div>
+                    <div class="flow-node-title">SQLite DB</div>
+                    <div class="flow-node-desc">shop.db<br>customers + orders</div>
+                </div>
+            </div>
+            <div class="flow-log" id="flow-log"><div style="color:var(--text-muted);font-size:11px">Requests will appear here as you use the app...</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🔌 API Explorer</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div>
+                    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Customers</div>
+                    <div class="endpoint-grid">
+                        <div class="endpoint-row"><span class="method-badge m-GET">GET</span><span class="endpoint-path">/api/customers</span><span class="endpoint-desc">list all</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-GET">GET</span><span class="endpoint-path">/api/customers/:id</span><span class="endpoint-desc">get + orders</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-POST">POST</span><span class="endpoint-path">/api/customers</span><span class="endpoint-desc">create</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-PUT">PUT</span><span class="endpoint-path">/api/customers/:id</span><span class="endpoint-desc">full replace</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-PATCH">PATCH</span><span class="endpoint-path">/api/customers/:id</span><span class="endpoint-desc">partial update</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-DELETE">DELETE</span><span class="endpoint-path">/api/customers/:id</span><span class="endpoint-desc">delete</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Orders</div>
+                    <div class="endpoint-grid">
+                        <div class="endpoint-row"><span class="method-badge m-GET">GET</span><span class="endpoint-path">/api/orders</span><span class="endpoint-desc">list all + customer</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-GET">GET</span><span class="endpoint-path">/api/orders/:id</span><span class="endpoint-desc">single order</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-POST">POST</span><span class="endpoint-path">/api/orders</span><span class="endpoint-desc">create</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-PUT">PUT</span><span class="endpoint-path">/api/orders/:id</span><span class="endpoint-desc">full replace</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-PATCH">PATCH</span><span class="endpoint-path">/api/orders/:id</span><span class="endpoint-desc">partial update</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-DELETE">DELETE</span><span class="endpoint-path">/api/orders/:id</span><span class="endpoint-desc">delete</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-GET">GET</span><span class="endpoint-path">/api/orders/qa/orphans</span><span class="endpoint-desc">QA check</span></div>
+                        <div class="endpoint-row"><span class="method-badge m-POST">POST</span><span class="endpoint-path">/api/orders/qa/query</span><span class="endpoint-desc">SQL runner</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ CUSTOMERS ═══ -->
+    <div id="tab-customers" class="panel">
         <div class="card">
             <div class="card-title">Add Customer</div>
             <div class="form-row">
@@ -182,9 +312,8 @@
                 <div><label>Email</label><input id="c-email" type="email" placeholder="alice@example.com" style="width:220px"></div>
                 <div style="padding-top:20px"><button class="btn" onclick="addCustomer()">Add Customer</button></div>
             </div>
-            <p class="hint">Try adding the same email twice — DB rejects it (UNIQUE constraint on email column).</p>
+            <p class="hint">Try adding the same email twice — DB rejects it (UNIQUE constraint).</p>
         </div>
-
         <div class="card">
             <div class="flex-between" style="margin-bottom:.75rem">
                 <div class="card-title" style="margin:0">All Customers</div>
@@ -197,12 +326,10 @@
                 </table>
             </div>
         </div>
-
     </div>
 
-    <!-- ═══════════════ ORDERS ═══════════════ -->
+    <!-- ═══ ORDERS ═══ -->
     <div id="tab-orders" class="panel">
-
         <div class="card">
             <div class="card-title">Add Order</div>
             <div class="form-row">
@@ -213,7 +340,6 @@
             </div>
             <p class="hint">Every order requires a valid customer_id — FK constraint prevents orphan records.</p>
         </div>
-
         <div class="card">
             <div class="flex-between" style="margin-bottom:.75rem">
                 <div class="card-title" style="margin:0">All Orders</div>
@@ -226,13 +352,11 @@
                 </table>
             </div>
         </div>
-
     </div>
 
-    <!-- ═══════════════ SQL RUNNER ═══════════════ -->
+    <!-- ═══ SQL RUNNER ═══ -->
     <div id="tab-sql" class="panel">
         <div class="card">
-
             <div class="chip-group">
                 <div class="chip-group-label">Basic</div>
                 <div class="chip-group-row">
@@ -242,7 +366,6 @@
                     <button class="btn-chip" onclick="setQuery(`SELECT SUM(amount) AS total_revenue FROM orders WHERE status = 'paid'`)">Total revenue</button>
                 </div>
             </div>
-
             <div class="chip-group">
                 <div class="chip-group-label">Inner Join</div>
                 <div class="chip-group-row">
@@ -250,7 +373,6 @@
                     <button class="btn-chip" onclick="setQuery('SELECT\n  c.name,\n  COUNT(o.id) AS total_orders,\n  SUM(o.amount) AS total_spent\nFROM customers c\nINNER JOIN orders o ON c.id = o.customer_id\nGROUP BY c.id\nORDER BY total_spent DESC')">Total spent per customer</button>
                 </div>
             </div>
-
             <div class="chip-group">
                 <div class="chip-group-label">Left Join</div>
                 <div class="chip-group-row">
@@ -259,7 +381,6 @@
                     <button class="btn-chip" onclick="setQuery('SELECT\n  c.id,\n  c.name,\n  COUNT(o.id) AS order_count\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nGROUP BY c.id\nORDER BY order_count DESC')">Order count per customer</button>
                 </div>
             </div>
-
             <div class="chip-group">
                 <div class="chip-group-label">Right Join (simulated — SQLite uses LEFT JOIN reversed)</div>
                 <div class="chip-group-row">
@@ -267,19 +388,16 @@
                     <button class="btn-chip" onclick="setQuery('SELECT\n  o.id AS order_id,\n  o.product,\n  o.customer_id\nFROM orders o\nLEFT JOIN customers c ON o.customer_id = c.id\nWHERE c.id IS NULL')">Orphan orders</button>
                 </div>
             </div>
-
             <div class="chip-group">
                 <div class="chip-group-label">QA / Data Integrity</div>
                 <div class="chip-group-row">
                     <button class="btn-chip" onclick="setQuery('SELECT email, COUNT(*) AS count\nFROM customers\nGROUP BY email\nHAVING COUNT(*) > 1')">Duplicate emails</button>
                     <button class="btn-chip" onclick="setQuery('SELECT customer_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) > 1')">Customers with 1+ orders</button>
-                    <button class="btn-chip" onclick="setQuery('SELECT\n  id,\n  product,\n  amount AS stored_amount,\n  ROUND(amount, 2) AS expected\nFROM orders\nWHERE amount != ROUND(amount, 2)')">Precision issues</button>
+                    <button class="btn-chip" onclick="setQuery('SELECT\n  id, product,\n  amount AS stored_amount,\n  ROUND(amount,2) AS expected\nFROM orders\nWHERE amount != ROUND(amount,2)')">Precision issues</button>
                 </div>
             </div>
-
             <hr class="divider">
-
-            <textarea id="sql-input" class="sql-editor" placeholder="Write any SELECT query here...&#10;&#10;e.g. SELECT * FROM customers"></textarea>
+            <textarea id="sql-input" class="sql-editor" placeholder="Write any SELECT, UPDATE or DELETE query..."></textarea>
             <div class="flex-gap" style="margin-top:8px">
                 <button class="btn" onclick="runSql()">▶ Run Query</button>
                 <button class="btn-ghost" onclick="clearSql()">Clear</button>
@@ -289,53 +407,36 @@
         </div>
     </div>
 
-    <!-- ═══════════════ UPDATE ═══════════════ -->
+    <!-- ═══ UPDATE ═══ -->
     <div id="tab-update" class="panel">
-
-        <!-- CUSTOMERS -->
         <div class="card">
             <div class="card-title">Update Customer</div>
-
             <div style="margin-bottom:1rem">
                 <label>Select Customer</label>
-                <select id="upd-customer-select" onchange="fillCustomerFields()" style="width:100%;max-width:320px">
-                    <option value="">— pick a customer —</option>
-                </select>
+                <select id="upd-customer-select" onchange="fillCustomerFields()" style="width:100%;max-width:320px"><option value="">— pick a customer —</option></select>
             </div>
-
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
                 <div><label>Name</label><input id="upd-c-name" placeholder="Full name" style="width:100%"></div>
                 <div><label>Email</label><input id="upd-c-email" type="email" placeholder="email@example.com" style="width:100%"></div>
             </div>
-
             <div class="flex-gap">
                 <button class="btn" onclick="updateCustomer('PUT')">PUT — full replace</button>
                 <button class="btn" style="background:var(--blue)" onclick="updateCustomer('PATCH')">PATCH — partial update</button>
             </div>
-            <p class="hint" style="margin-top:8px">
-                <strong>PUT</strong> — both name and email required, replaces the full record. &nbsp;
-                <strong>PATCH</strong> — fill only the field(s) you want to change.
-            </p>
+            <p class="hint" style="margin-top:8px"><strong>PUT</strong> — both fields required. <strong>PATCH</strong> — fill only what you want to change.</p>
             <div id="upd-customer-result" style="margin-top:.75rem"></div>
         </div>
-
-        <!-- ORDERS -->
         <div class="card">
             <div class="card-title">Update Order</div>
-
             <div style="margin-bottom:1rem">
                 <label>Select Order</label>
-                <select id="upd-order-select" onchange="fillOrderFields()" style="width:100%;max-width:320px">
-                    <option value="">— pick an order —</option>
-                </select>
+                <select id="upd-order-select" onchange="fillOrderFields()" style="width:100%;max-width:320px"><option value="">— pick an order —</option></select>
             </div>
-
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
                 <div><label>Customer ID</label><input id="upd-o-customer" type="number" placeholder="FK" style="width:100%"></div>
                 <div><label>Product</label><input id="upd-o-product" placeholder="Product name" style="width:100%"></div>
                 <div><label>Amount ($)</label><input id="upd-o-amount" type="number" step="0.01" placeholder="0.00" style="width:100%"></div>
-                <div>
-                    <label>Status</label>
+                <div><label>Status</label>
                     <select id="upd-o-status" style="width:100%">
                         <option value="">— unchanged —</option>
                         <option value="pending">pending</option>
@@ -344,24 +445,81 @@
                     </select>
                 </div>
             </div>
-
             <div class="flex-gap">
                 <button class="btn" onclick="updateOrder('PUT')">PUT — full replace</button>
                 <button class="btn" style="background:var(--blue)" onclick="updateOrder('PATCH')">PATCH — partial update</button>
             </div>
-            <p class="hint" style="margin-top:8px">
-                <strong>PUT</strong> — customer_id, product and amount required. &nbsp;
-                <strong>PATCH</strong> — fill only the field(s) you want to change.
-            </p>
+            <p class="hint" style="margin-top:8px"><strong>PUT</strong> — customer_id, product and amount required. <strong>PATCH</strong> — fill only what you want to change.</p>
             <div id="upd-order-result" style="margin-top:.75rem"></div>
         </div>
-
     </div>
 
-    <!-- ═══════════════ QUERY LAB ═══════════════ -->
-    <div id="tab-qa" class="panel">
+    <!-- ═══ API TESTER ═══ -->
+    <div id="tab-postman" class="panel">
+        <div class="card">
+            <div class="pm-row">
+                <select id="pm-method" class="pm-method" onchange="onMethodChange()">
+                    <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+                </select>
+                <input id="pm-url" class="pm-url" value="http://localhost:3000/api/customers">
+                <button class="btn" onclick="sendRequest()" style="min-width:90px">▶ Send</button>
+            </div>
+            <div style="margin-bottom:12px">
+                <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Quick presets</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="quick-chip" onclick="setPreset('GET','/api/customers')">GET customers</button>
+                    <button class="quick-chip" onclick="setPreset('GET','/api/orders')">GET orders</button>
+                    <button class="quick-chip" onclick="setPreset('GET','/api/customers/1')">GET customer/1</button>
+                    <button class="quick-chip" onclick="setPreset('POST','/api/customers','{\"name\":\"Test User\",\"email\":\"test@example.com\"}')">POST customer</button>
+                    <button class="quick-chip" onclick="setPreset('POST','/api/orders','{\"customer_id\":1,\"product\":\"Laptop\",\"amount\":999.99}')">POST order</button>
+                    <button class="quick-chip" onclick="setPreset('PATCH','/api/customers/1','{\"name\":\"Updated Name\"}')">PATCH customer</button>
+                    <button class="quick-chip" onclick="setPreset('PATCH','/api/orders/1','{\"status\":\"paid\"}')">PATCH order status</button>
+                    <button class="quick-chip" onclick="setPreset('PUT','/api/customers/1','{\"name\":\"Full Replace\",\"email\":\"new@example.com\"}')">PUT customer</button>
+                    <button class="quick-chip" onclick="setPreset('DELETE','/api/customers/1')">DELETE customer</button>
+                    <button class="quick-chip" onclick="setPreset('GET','/api/orders/qa/orphans')">QA orphans</button>
+                </div>
+            </div>
+            <div class="pm-tabs">
+                <button class="pm-tab active" onclick="switchPmTab('pm-body',this)">Body</button>
+                <button class="pm-tab" onclick="switchPmTab('pm-req-headers',this)">Request Headers</button>
+                <button class="pm-tab" onclick="switchPmTab('pm-cookies',this)">Cookies</button>
+            </div>
+            <div id="pm-body" class="pm-panel active">
+                <textarea id="pm-body-input" class="pm-body-area" placeholder='{"key": "value"}'></textarea>
+                <div id="pm-body-hint" class="hint" style="margin-top:4px"></div>
+            </div>
+            <div id="pm-req-headers" class="pm-panel">
+                <div id="pm-headers-list"></div>
+                <button class="btn-ghost" onclick="addHeader()" style="margin-top:6px;font-size:12px">+ Add Header</button>
+                <div class="hint" style="margin-top:6px">Content-Type: application/json is sent automatically with POST/PUT/PATCH.</div>
+            </div>
+            <div id="pm-cookies" class="pm-panel">
+                <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px">
+                    <div id="pm-cookie-display" style="font-family:var(--mono);font-size:12px;line-height:1.8">Loading...</div>
+                </div>
+                <div class="hint" style="margin-top:6px">Cookies sent automatically by the browser for localhost:3000.</div>
+            </div>
+        </div>
+        <div class="card" id="pm-response" style="display:none">
+            <div class="card-title" style="margin-bottom:.5rem">Response</div>
+            <div class="flex-gap" style="margin-bottom:8px">
+                <div id="pm-res-status" class="res-status">—</div>
+                <div class="res-meta">
+                    <span>Time: <strong id="pm-res-time">—</strong></span>
+                    <span>Size: <strong id="pm-res-size">—</strong></span>
+                </div>
+            </div>
+            <div class="pm-tabs">
+                <button class="pm-tab active" onclick="switchResTb('res-body',this)">Body</button>
+                <button class="pm-tab" onclick="switchResTb('res-headers',this)">Response Headers</button>
+            </div>
+            <div id="res-body" class="pm-panel active"><pre id="pm-res-body" class="res-body-pre"></pre></div>
+            <div id="res-headers" class="pm-panel"><table class="res-headers-table" id="pm-res-headers-table"></table></div>
+        </div>
+    </div>
 
-        <!-- Schema reference -->
+    <!-- ═══ QUERY LAB ═══ -->
+    <div id="tab-qa" class="panel">
         <div class="card" style="margin-bottom:1rem">
             <div class="card-title">Schema Reference</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -369,9 +527,7 @@
                     <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">customers</div>
                     <div class="mono" style="font-size:12px;line-height:2;background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm)">
                         <span style="color:var(--blue)">id</span> INTEGER <span style="color:var(--green)">PK</span><br>
-                        name TEXT<br>
-                        email TEXT UNIQUE<br>
-                        created_at TEXT
+                        name TEXT<br>email TEXT UNIQUE<br>created_at TEXT
                     </div>
                 </div>
                 <div>
@@ -379,36 +535,45 @@
                     <div class="mono" style="font-size:12px;line-height:2;background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm)">
                         <span style="color:var(--blue)">id</span> INTEGER <span style="color:var(--green)">PK</span><br>
                         <span style="color:#d97706">customer_id</span> INTEGER <span style="color:#d97706">FK</span><br>
-                        product TEXT<br>
-                        amount REAL<br>
-                        status TEXT<br>
-                        created_at TEXT
+                        product TEXT<br>amount REAL<br>status TEXT<br>created_at TEXT
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="card">
             <div class="card-title">Custom SQL Query</div>
-
-            <textarea id="qa-sql-input" class="sql-editor" style="min-height:130px"
-                      placeholder="Write your SELECT query here...&#10;&#10;e.g. SELECT c.name, COUNT(o.id) AS orders&#10;     FROM customers c&#10;     LEFT JOIN orders o ON c.id = o.customer_id&#10;     GROUP BY c.id"></textarea>
-
+            <textarea id="qa-sql-input" class="sql-editor" style="min-height:130px" placeholder="Write any SELECT, UPDATE or DELETE query here..."></textarea>
             <div class="flex-gap" style="margin-top:10px">
                 <button class="btn" onclick="runCustomQuery()">▶ Run Query</button>
                 <button class="btn-ghost" onclick="clearCustomQuery()">Clear</button>
                 <span id="qa-sql-status" style="font-size:12px;color:var(--text-secondary)"></span>
             </div>
-
             <div id="qa-sql-result" class="sql-result"></div>
         </div>
-
     </div>
 
-</div><!-- /layout -->
-
+</div>
 <script>
     const BASE = 'http://localhost:3000/api';
+    const flowLog = [];
+    let pmHeaders = [{ key: 'Accept', value: 'application/json' }];
+    let _customers = [], _orders = [];
+    const STATUS_COLORS = { paid: '#16a34a', pending: '#d97706', cancelled: '#dc2626' };
+    const TOP_COLORS    = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981'];
+
+    // ── Fetch interceptor for flow log ─────────────────────────────
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = async function(url, opts = {}) {
+        const method = (opts.method || 'GET').toUpperCase();
+        const path   = String(url).replace(BASE, '').replace('http://localhost:3000/api', '');
+        const time   = new Date().toLocaleTimeString('en', { hour12: false });
+        animateFlow(method);
+        const res = await _origFetch(url, opts);
+        flowLog.unshift({ time, method, path, status: res.status });
+        if (flowLog.length > 20) flowLog.pop();
+        renderFlowLog();
+        return res;
+    };
 
     // ── Tab switching ──────────────────────────────────────────────
     function switchTab(name, el) {
@@ -418,15 +583,15 @@
         document.getElementById('tab-' + name).classList.add('active');
         if (name === 'customers') loadCustomers();
         if (name === 'orders')    loadOrders();
-        if (name === 'update') { loadCustomerSelect(); loadOrderSelect(); }
+        if (name === 'overview')  loadOverview();
+        if (name === 'update')    { loadCustomerSelect(); loadOrderSelect(); }
+        if (name === 'postman')   initPostman();
+        if (name === 'qa')        clearCustomQuery();
     }
 
-    // ── Fetch helpers ──────────────────────────────────────────────
+    // ── API helper ─────────────────────────────────────────────────
     async function api(path, opts = {}) {
-        const res = await fetch(BASE + path, {
-            headers: { 'Content-Type': 'application/json' },
-            ...opts
-        });
+        const res  = await fetch(BASE + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
         const text = await res.text();
         const data = text ? JSON.parse(text) : {};
         if (!res.ok) throw new Error(data.error || 'Request failed');
@@ -437,31 +602,22 @@
     async function loadCustomers() {
         try {
             const rows = await api('/customers');
-            const tb = document.querySelector('#customers-table tbody');
-            tb.innerHTML = rows.length
-                ? rows.map(c => `<tr>
-            <td class="mono">${c.id}</td>
-            <td>${esc(c.name)}</td>
-            <td>${esc(c.email)}</td>
-            <td style="color:var(--text-secondary)">${(c.created_at || '').slice(0, 10)}</td>
-          </tr>`).join('')
-                : `<tr><td colspan="4" class="result-empty" style="padding:1rem">No customers yet. Add one above.</td></tr>`;
-
+            document.querySelector('#customers-table tbody').innerHTML = rows.length
+                ? rows.map(c => `<tr><td class="mono">${c.id}</td><td>${esc(c.name)}</td><td>${esc(c.email)}</td><td style="color:var(--text-secondary)">${(c.created_at||'').slice(0,10)}</td></tr>`).join('')
+                : `<tr><td colspan="4" class="result-empty" style="padding:1rem">No customers yet.</td></tr>`;
             const sel = document.getElementById('o-customer');
             sel.innerHTML = '<option value="">— select customer —</option>' +
                 rows.map(c => `<option value="${c.id}">${esc(c.name)} (id=${c.id})</option>`).join('');
-        } catch (e) {
-            showTableError('customers-table', 4, e.message);
-        }
+        } catch (e) { showTableError('customers-table', 4, e.message); }
     }
 
     async function addCustomer() {
-        const name  = document.getElementById('c-name').value.trim();
+        const name = document.getElementById('c-name').value.trim();
         const email = document.getElementById('c-email').value.trim();
         if (!name || !email) { alert('Name and email are required.'); return; }
         try {
             await api('/customers', { method: 'POST', body: JSON.stringify({ name, email }) });
-            document.getElementById('c-name').value  = '';
+            document.getElementById('c-name').value = '';
             document.getElementById('c-email').value = '';
             loadCustomers();
         } catch (e) { alert('Error: ' + e.message); }
@@ -471,22 +627,16 @@
     async function loadOrders() {
         try {
             const rows = await api('/orders');
-            const tb = document.querySelector('#orders-table tbody');
-            tb.innerHTML = rows.length
+            document.querySelector('#orders-table tbody').innerHTML = rows.length
                 ? rows.map(o => `<tr>
             <td class="mono">${o.id}</td>
-            <td>
-              ${esc(o.customer_name)}
-              <span class="badge badge-fk">FK=${o.customer_id}</span>
-            </td>
+            <td>${esc(o.customer_name)} <span class="badge badge-fk">FK=${o.customer_id}</span></td>
             <td>${esc(o.product)}</td>
             <td>$${Number(o.amount).toFixed(2)}</td>
             <td><span class="badge badge-${o.status}">${o.status}</span></td>
           </tr>`).join('')
-                : `<tr><td colspan="5" class="result-empty" style="padding:1rem">No orders yet. Add one above.</td></tr>`;
-        } catch (e) {
-            showTableError('orders-table', 5, e.message);
-        }
+                : `<tr><td colspan="5" class="result-empty" style="padding:1rem">No orders yet.</td></tr>`;
+        } catch (e) { showTableError('orders-table', 5, e.message); }
     }
 
     async function addOrder() {
@@ -506,69 +656,126 @@
     async function runSql() {
         const sql = document.getElementById('sql-input').value.trim();
         if (!sql) return;
-        const resultEl = document.getElementById('sql-result');
         const statusEl = document.getElementById('sql-status');
+        const resultEl = document.getElementById('sql-result');
         statusEl.textContent = 'Running…';
-        resultEl.innerHTML   = '';
+        resultEl.innerHTML = '';
         try {
             const data = await api('/orders/qa/query', { method: 'POST', body: JSON.stringify({ sql }) });
-            if (data.message) {
-                statusEl.textContent = data.message;
-                resultEl.innerHTML   = `<div class="result-empty" style="color:var(--green);margin-top:8px">✅ ${data.message}</div>`;
-            } else {
-                statusEl.textContent = `${data.rows.length} row(s) returned`;
-                resultEl.innerHTML   = renderTable(data.rows);
-            }
-        } catch (e) {
-            statusEl.textContent = '';
-            resultEl.innerHTML   = `<div class="result-error">${esc(e.message)}</div>`;
-        }
+            statusEl.textContent = data.message || `${data.rows.length} row(s) returned`;
+            resultEl.innerHTML   = data.message
+                ? `<div class="result-empty" style="color:var(--green)">✅ ${data.message}</div>`
+                : renderTable(data.rows);
+        } catch (e) { statusEl.textContent = ''; resultEl.innerHTML = `<div class="result-error">${esc(e.message)}</div>`; }
     }
 
     function setQuery(sql) {
-        document.getElementById('sql-input').value  = sql;
+        document.getElementById('sql-input').value = sql;
         document.getElementById('sql-result').innerHTML = '';
         document.getElementById('sql-status').textContent = '';
         document.getElementById('sql-input').focus();
     }
 
     function clearSql() {
-        document.getElementById('sql-input').value        = '';
-        document.getElementById('sql-result').innerHTML   = '';
+        document.getElementById('sql-input').value = '';
+        document.getElementById('sql-result').innerHTML = '';
         document.getElementById('sql-status').textContent = '';
     }
 
-    // ── Update tab ─────────────────────────────────────────────────
-    let _customers = [];
-    let _orders    = [];
+    // ── Overview ───────────────────────────────────────────────────
+    async function loadOverview() {
+        try {
+            const [customers, orders] = await Promise.all([api('/customers'), api('/orders')]);
+            const revenue = orders.filter(o => o.status === 'paid').reduce((s, o) => s + Number(o.amount), 0);
+            const avg     = orders.length ? orders.reduce((s, o) => s + Number(o.amount), 0) / orders.length : 0;
+            document.getElementById('ov-customers').textContent     = customers.length;
+            document.getElementById('ov-customers-sub').textContent = `${customers.length} registered`;
+            document.getElementById('ov-orders').textContent        = orders.length;
+            document.getElementById('ov-orders-sub').textContent    = `across ${customers.length} customers`;
+            document.getElementById('ov-revenue').textContent       = '$' + revenue.toFixed(2);
+            document.getElementById('ov-avg').textContent           = '$' + avg.toFixed(2);
 
+            const statusCount = { paid: 0, pending: 0, cancelled: 0 };
+            orders.forEach(o => { if (o.status in statusCount) statusCount[o.status]++; });
+            const maxS = Math.max(...Object.values(statusCount), 1);
+            document.getElementById('ov-status-chart').innerHTML = Object.entries(statusCount).map(([s, n]) =>
+                `<div class="chart-bar-row">
+          <div class="chart-bar-label">${s}</div>
+          <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${Math.round(n/maxS*100)}%;background:${STATUS_COLORS[s]}">${n||''}</div></div>
+          <div class="chart-bar-val">${n}</div>
+        </div>`).join('');
+
+            const spend = {};
+            orders.forEach(o => { const k = o.customer_name || `id=${o.customer_id}`; spend[k] = (spend[k]||0) + Number(o.amount); });
+            const sorted = Object.entries(spend).sort((a,b) => b[1]-a[1]).slice(0,5);
+            const maxSp  = sorted.length ? sorted[0][1] : 1;
+            document.getElementById('ov-top-customers').innerHTML = sorted.length
+                ? sorted.map(([name, amt], i) =>
+                    `<div class="chart-bar-row">
+              <div class="chart-bar-label">${esc(name)}</div>
+              <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${Math.round(amt/maxSp*100)}%;background:${TOP_COLORS[i]}">$${amt.toFixed(0)}</div></div>
+              <div class="chart-bar-val">$${amt.toFixed(2)}</div>
+            </div>`).join('')
+                : '<div class="result-empty">No orders yet.</div>';
+        } catch (e) { console.error('Overview error:', e); }
+    }
+
+    function animateFlow(method) {
+        ['flow-ui','flow-api','flow-db'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('active-node');
+            setTimeout(() => el.classList.remove('active-node'), 800);
+        });
+        ['flow-pkt-1','flow-pkt-2'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            setTimeout(() => {
+                el.style.animation = 'none'; el.offsetHeight;
+                el.style.background = method==='GET'?'#16a34a':method==='POST'?'#3b82f6':method==='DELETE'?'#dc2626':'#d97706';
+                el.style.animation  = 'packetMove 0.5s ease forwards';
+            }, i * 200);
+        });
+    }
+
+    function renderFlowLog() {
+        const el = document.getElementById('flow-log');
+        if (!el) return;
+        el.innerHTML = flowLog.map(e =>
+            `<div class="log-entry">
+        <span class="log-time">${e.time}</span>
+        <span class="log-method log-${e.method}">${e.method}</span>
+        <span class="log-path">${esc(e.path)}</span>
+        <span style="font-size:11px;color:${e.status < 300 ? 'var(--green)' : 'var(--red)'}">${e.status}</span>
+      </div>`).join('') || '<div style="color:var(--text-muted);font-size:11px">No requests yet...</div>';
+    }
+
+    // ── Update tab ─────────────────────────────────────────────────
     async function loadCustomerSelect() {
         _customers = await api('/customers');
-        const sel  = document.getElementById('upd-customer-select');
-        sel.innerHTML = '<option value="">— pick a customer —</option>' +
+        document.getElementById('upd-customer-select').innerHTML =
+            '<option value="">— pick a customer —</option>' +
             _customers.map(c => `<option value="${c.id}">${esc(c.name)} (id=${c.id})</option>`).join('');
         document.getElementById('upd-customer-result').innerHTML = '';
     }
 
     async function loadOrderSelect() {
-        _orders   = await api('/orders');
-        const sel = document.getElementById('upd-order-select');
-        sel.innerHTML = '<option value="">— pick an order —</option>' +
-            _orders.map(o => `<option value="${o.id}">#${o.id} — ${esc(o.product)} (${Number(o.amount).toFixed(2)})</option>`).join('');
+        _orders = await api('/orders');
+        document.getElementById('upd-order-select').innerHTML =
+            '<option value="">— pick an order —</option>' +
+            _orders.map(o => `<option value="${o.id}">#${o.id} — ${esc(o.product)} ($${Number(o.amount).toFixed(2)})</option>`).join('');
         document.getElementById('upd-order-result').innerHTML = '';
     }
 
     function fillCustomerFields() {
-        const id = document.getElementById('upd-customer-select').value;
-        const c  = _customers.find(x => String(x.id) === id);
+        const c = _customers.find(x => String(x.id) === document.getElementById('upd-customer-select').value);
         if (!c) return;
         document.getElementById('upd-c-name').value  = c.name  || '';
         document.getElementById('upd-c-email').value = c.email || '';
     }
 
     function fillOrderFields() {
-        const id = document.getElementById('upd-order-select').value;
-        const o  = _orders.find(x => String(x.id) === id);
+        const o = _orders.find(x => String(x.id) === document.getElementById('upd-order-select').value);
         if (!o) return;
         document.getElementById('upd-o-customer').value = o.customer_id || '';
         document.getElementById('upd-o-product').value  = o.product     || '';
@@ -581,20 +788,15 @@
         const name  = document.getElementById('upd-c-name').value.trim();
         const email = document.getElementById('upd-c-email').value.trim();
         const out   = document.getElementById('upd-customer-result');
-
         if (!id) { out.innerHTML = `<div class="result-error">Select a customer first.</div>`; return; }
-
         const body = {};
         if (name)  body.name  = name;
         if (email) body.email = email;
-
         try {
             const data = await api(`/customers/${id}`, { method, body: JSON.stringify(body) });
             out.innerHTML = `<div class="result-empty" style="color:var(--green)">✅ Customer updated</div>` + renderTable([data]);
             await loadCustomerSelect();
-        } catch (e) {
-            out.innerHTML = `<div class="result-error">${esc(e.message)}</div>`;
-        }
+        } catch (e) { out.innerHTML = `<div class="result-error">${esc(e.message)}</div>`; }
     }
 
     async function updateOrder(method) {
@@ -604,25 +806,121 @@
         const amount      = document.getElementById('upd-o-amount').value;
         const status      = document.getElementById('upd-o-status').value;
         const out         = document.getElementById('upd-order-result');
-
         if (!id) { out.innerHTML = `<div class="result-error">Select an order first.</div>`; return; }
-
         const body = {};
         if (customer_id) body.customer_id = Number(customer_id);
         if (product)     body.product     = product;
         if (amount)      body.amount      = Number(amount);
         if (status)      body.status      = status;
-
         try {
             const data = await api(`/orders/${id}`, { method, body: JSON.stringify(body) });
             out.innerHTML = `<div class="result-empty" style="color:var(--green)">✅ Order updated</div>` + renderTable([data]);
             await loadOrderSelect();
-        } catch (e) {
-            out.innerHTML = `<div class="result-error">${esc(e.message)}</div>`;
-        }
+        } catch (e) { out.innerHTML = `<div class="result-error">${esc(e.message)}</div>`; }
     }
 
+    // ── API Tester ─────────────────────────────────────────────────
+    function initPostman() { renderHeaders(); loadCookies(); onMethodChange(); }
 
+    function switchPmTab(id, el) {
+        document.querySelectorAll('#tab-postman .pm-tab').forEach(t => t.classList.remove('active'));
+        ['pm-body','pm-req-headers','pm-cookies'].forEach(i => { const el = document.getElementById(i); if(el) el.classList.remove('active'); });
+        el.classList.add('active');
+        document.getElementById(id).classList.add('active');
+        if (id === 'pm-cookies') loadCookies();
+    }
+
+    function switchResTb(id, el) {
+        document.querySelectorAll('#pm-response .pm-tab').forEach(t => t.classList.remove('active'));
+        ['res-body','res-headers'].forEach(i => document.getElementById(i).classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(id).classList.add('active');
+    }
+
+    function onMethodChange() {
+        const method  = document.getElementById('pm-method').value;
+        const hasBody = ['POST','PUT','PATCH'].includes(method);
+        const area    = document.getElementById('pm-body-input');
+        area.disabled      = !hasBody;
+        area.style.opacity = hasBody ? '1' : '0.4';
+        document.getElementById('pm-body-hint').textContent = hasBody ? '' : `${method} requests don't have a body.`;
+    }
+
+    function setPreset(method, path, body = '') {
+        document.getElementById('pm-method').value = method;
+        document.getElementById('pm-url').value    = `http://localhost:3000${path}`;
+        document.getElementById('pm-body-input').value = body ? JSON.stringify(JSON.parse(body), null, 2) : '';
+        onMethodChange();
+    }
+
+    function addHeader() { pmHeaders.push({ key: '', value: '' }); renderHeaders(); }
+    function removeHeader(i) { pmHeaders.splice(i, 1); renderHeaders(); }
+    function renderHeaders() {
+        document.getElementById('pm-headers-list').innerHTML = pmHeaders.map((h, i) =>
+            `<div class="pm-header-row">
+        <input value="${esc(h.key)}"   placeholder="Header name" oninput="pmHeaders[${i}].key=this.value">
+        <input value="${esc(h.value)}" placeholder="Value"       oninput="pmHeaders[${i}].value=this.value">
+        <button class="pm-remove" onclick="removeHeader(${i})">×</button>
+      </div>`).join('');
+    }
+
+    function loadCookies() {
+        const el = document.getElementById('pm-cookie-display');
+        if (!el) return;
+        el.innerHTML = document.cookie
+            ? document.cookie.split(';').map(c => `<div>${esc(c.trim())}</div>`).join('')
+            : '<span style="color:var(--text-muted);font-style:italic">No cookies found for this origin.</span>';
+    }
+
+    async function sendRequest() {
+        const method  = document.getElementById('pm-method').value;
+        const url     = document.getElementById('pm-url').value.trim();
+        const bodyRaw = document.getElementById('pm-body-input').value.trim();
+        if (!url) return;
+        const headers = { 'Accept': 'application/json' };
+        pmHeaders.forEach(h => { if (h.key) headers[h.key] = h.value; });
+        if (['POST','PUT','PATCH'].includes(method)) headers['Content-Type'] = 'application/json';
+        let body;
+        if (['POST','PUT','PATCH'].includes(method) && bodyRaw) {
+            try { JSON.parse(bodyRaw); body = bodyRaw; } catch { alert('Invalid JSON in request body'); return; }
+        }
+        const t0 = performance.now();
+        let response, text;
+        try {
+            response = await _origFetch(url, { method, headers, body });
+            text     = await response.text();
+        } catch (e) {
+            document.getElementById('pm-response').style.display = 'block';
+            document.getElementById('pm-res-status').className   = 'res-status res-5xx';
+            document.getElementById('pm-res-status').textContent = 'Network Error';
+            document.getElementById('pm-res-body').textContent   = e.message;
+            document.getElementById('pm-res-time').textContent   = '—';
+            document.getElementById('pm-res-size').textContent   = '—';
+            return;
+        }
+        const elapsed = Math.round(performance.now() - t0);
+        const size    = new Blob([text]).size;
+        const status  = response.status;
+        const cls     = status < 300 ? 'res-2xx' : status < 500 ? 'res-4xx' : 'res-5xx';
+        let pretty = text;
+        try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+        const resHeaders = [];
+        response.headers.forEach((v, k) => resHeaders.push({ k, v }));
+        document.getElementById('pm-response').style.display  = 'block';
+        document.getElementById('pm-res-status').className    = `res-status ${cls}`;
+        document.getElementById('pm-res-status').textContent  = `${status} ${response.statusText || ''}`;
+        document.getElementById('pm-res-time').textContent    = `${elapsed} ms`;
+        document.getElementById('pm-res-size').textContent    = size < 1024 ? `${size} B` : `${(size/1024).toFixed(1)} KB`;
+        document.getElementById('pm-res-body').textContent    = pretty;
+        document.getElementById('pm-res-headers-table').innerHTML =
+            resHeaders.map(h => `<tr><td>${esc(h.k)}</td><td>${esc(h.v)}</td></tr>`).join('');
+        const path = url.replace('http://localhost:3000', '');
+        flowLog.unshift({ time: new Date().toLocaleTimeString('en',{hour12:false}), method, path, status });
+        if (flowLog.length > 20) flowLog.pop();
+        renderFlowLog();
+    }
+
+    // ── Query Lab ──────────────────────────────────────────────────
     async function runCustomQuery() {
         const sql      = document.getElementById('qa-sql-input').value.trim();
         const statusEl = document.getElementById('qa-sql-status');
@@ -632,17 +930,11 @@
         resultEl.innerHTML   = '';
         try {
             const data = await api('/orders/qa/query', { method: 'POST', body: JSON.stringify({ sql }) });
-            if (data.message) {
-                statusEl.textContent = data.message;
-                resultEl.innerHTML   = `<div class="result-empty" style="color:var(--green);margin-top:8px">✅ ${data.message}</div>`;
-            } else {
-                statusEl.textContent = `${data.rows.length} row(s) returned`;
-                resultEl.innerHTML   = renderTable(data.rows);
-            }
-        } catch (e) {
-            statusEl.textContent = '';
-            resultEl.innerHTML   = `<div class="result-error">${esc(e.message)}</div>`;
-        }
+            statusEl.textContent = data.message || `${data.rows.length} row(s) returned`;
+            resultEl.innerHTML   = data.message
+                ? `<div class="result-empty" style="color:var(--green)">✅ ${data.message}</div>`
+                : renderTable(data.rows);
+        } catch (e) { statusEl.textContent = ''; resultEl.innerHTML = `<div class="result-error">${esc(e.message)}</div>`; }
     }
 
     function clearCustomQuery() {
@@ -655,20 +947,15 @@
     function renderTable(rows) {
         if (!rows || rows.length === 0) return `<div class="result-empty">No rows returned.</div>`;
         const cols = Object.keys(rows[0]);
-        return `
-      <div class="table-wrap">
-        <div class="result-meta">${rows.length} row(s)</div>
-        <table>
-          <thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
-          <tbody>${rows.map(r =>
-            `<tr>${cols.map(c =>
-                r[c] == null
-                    ? `<td><span class="null-val">NULL</span></td>`
-                    : `<td>${esc(String(r[c]))}</td>`
-            ).join('')}</tr>`
-        ).join('')}</tbody>
-        </table>
-      </div>`;
+        return `<div class="table-wrap">
+      <div class="result-meta">${rows.length} row(s)</div>
+      <table>
+        <thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(r => `<tr>${cols.map(c =>
+            r[c] == null ? `<td><span class="null-val">NULL</span></td>` : `<td>${esc(String(r[c]))}</td>`
+        ).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>`;
     }
 
     function showTableError(tableId, cols, msg) {
@@ -681,7 +968,7 @@
     }
 
     // ── Init ───────────────────────────────────────────────────────
-    loadCustomers();
+    loadOverview();
 </script>
 </body>
 </html>
