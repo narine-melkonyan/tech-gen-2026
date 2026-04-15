@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Client-Server Model — QA Internship</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f5f5f5; font-family: Arial, sans-serif; }
+        button { cursor: pointer; transition: opacity 0.15s; }
+        button:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+<script src="/layout.js"></script>
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState } = React;
+
+    const GREEN = "#1a5c35";
+    const GREEN_LIGHT = "#e8f5ee";
+    const BLUE = "#185FA5";
+    const BLUE_LIGHT = "#e6f1fb";
+    const AMBER = "#854f0b";
+    const AMBER_LIGHT = "#faeeda";
+    const RED = "#a32d2d";
+    const RED_LIGHT = "#fcebeb";
+    const GRAY = "#444";
+    const BORDER = "#ddd";
+
+    const tabs = ["Basic Model", "Request Flow", "Multi-tier", "Real World", "QA View"];
+
+    function Section({ title, color = GREEN, children }) {
+        return (
+            <div style={{ marginBottom: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                    <div style={{ width: 4, height: 20, background: color, borderRadius: 2 }} />
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color, fontFamily: "Georgia, serif" }}>{title}</h3>
+                </div>
+                {children}
+            </div>
+        );
+    }
+
+    function Box({ label, sub, icon, color = GREEN, bg = GREEN_LIGHT, width = "auto", center = false }) {
+        return (
+            <div style={{ background: bg, border: `2px solid ${color}`, borderRadius: 10, padding: "12px 16px", width, textAlign: center ? "center" : "left", flexShrink: 0 }}>
+                {icon && <div style={{ fontSize: 22, marginBottom: 4 }}>{icon}</div>}
+                <div style={{ fontWeight: 700, fontSize: 13, color, fontFamily: "Arial, sans-serif" }}>{label}</div>
+                {sub && <div style={{ fontSize: 11, color: GRAY, marginTop: 3, fontFamily: "Arial, sans-serif", lineHeight: 1.4 }}>{sub}</div>}
+            </div>
+        );
+    }
+
+    function BasicModel() {
+        return (
+            <div>
+                <Section title="The Core Concept">
+                    <div style={{ background: "#f9f9f9", border: `1px solid ${BORDER}`, borderRadius: 10, padding: 20, marginBottom: 20 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
+                            <Box label="CLIENT" sub={"Browser / App\nPostman / Script"} icon="💻" color={BLUE} bg={BLUE_LIGHT} width={130} center />
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <div style={{ fontSize: 10, color: GREEN, fontFamily: "Arial, sans-serif", fontWeight: 700 }}>REQUEST →</div>
+                                    <div style={{ height: 2, background: GREEN, width: 80 }} />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <div style={{ height: 2, background: RED, width: 80 }} />
+                                    <div style={{ fontSize: 10, color: RED, fontFamily: "Arial, sans-serif", fontWeight: 700 }}>← RESPONSE</div>
+                                </div>
+                            </div>
+                            <Box label="SERVER" sub={"Processes requests\nReturns data"} icon="🖥️" color={GREEN} bg={GREEN_LIGHT} width={130} center />
+                        </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {[
+                            { title: "CLIENT always:", points: ["Initiates the request", "Never receives unsolicited data", "Examples: browser, mobile app, Postman, curl, test script"], color: BLUE, bg: BLUE_LIGHT },
+                            { title: "SERVER always:", points: ["Waits and listens", "Responds only when asked", "Examples: web server, API server, database server"], color: GREEN, bg: GREEN_LIGHT },
+                        ].map(({ title, points, color, bg }) => (
+                            <div key={title} style={{ background: bg, border: `1.5px solid ${color}`, borderRadius: 8, padding: 14 }}>
+                                <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 8, fontFamily: "Arial, sans-serif" }}>{title}</div>
+                                {points.map((p, i) => (
+                                    <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                        <span style={{ color, fontWeight: 700, fontSize: 11 }}>•</span>
+                                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="The Restaurant Analogy" color={AMBER}>
+                    <div style={{ background: AMBER_LIGHT, border: `1.5px solid ${AMBER}`, borderRadius: 10, padding: 16 }}>
+                        <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                            {[
+                                { icon: "🧑", label: "Customer", sub: "= Client (Browser)", color: BLUE },
+                                { icon: "🤵", label: "Waiter", sub: "= Server (API)", color: GREEN },
+                                { icon: "👨‍🍳", label: "Kitchen", sub: "= Database", color: AMBER },
+                            ].map(({ icon, label, sub, color }) => (
+                                <div key={label} style={{ textAlign: "center" }}>
+                                    <div style={{ fontSize: 32 }}>{icon}</div>
+                                    <div style={{ fontWeight: 700, fontSize: 13, color, fontFamily: "Arial, sans-serif" }}>{label}</div>
+                                    <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif" }}>{sub}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ borderTop: `1px solid ${AMBER}`, paddingTop: 12 }}>
+                            {[
+                                "Customer (client) reads the menu and places an order (HTTP request)",
+                                "Waiter (server) takes the order to the kitchen (processes request, queries DB)",
+                                "Kitchen (database) prepares the food (returns data)",
+                                "Waiter (server) brings the food back (HTTP response)",
+                                "Customer (client) receives and consumes it (renders in browser)",
+                            ].map((step, i) => (
+                                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 6, alignItems: "flex-start" }}>
+                                    <div style={{ width: 20, height: 20, borderRadius: "50%", background: AMBER, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, flexShrink: 0, fontFamily: "Arial, sans-serif" }}>{i + 1}</div>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.5 }}>{step}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function RequestFlow() {
+        const [step, setStep] = useState(0);
+        const steps = [
+            { label: "User Action", icon: "👆", desc: "User types URL or clicks a button in the browser", side: "client", detail: "The client prepares an HTTP request. It needs: Method (GET/POST), URL, Headers (Authorization, Content-Type), and optionally a Body." },
+            { label: "DNS Lookup", icon: "🔍", desc: "Browser resolves domain name to IP address", side: "network", detail: "The browser asks a DNS server: 'What is the IP address of api.example.com?' DNS returns: 192.168.1.100. Now the browser knows where to send the request." },
+            { label: "TCP Handshake", icon: "🤝", desc: "Client and server establish a connection", side: "network", detail: "3-way handshake:\n(1) Client → SYN → Server\n(2) Server → SYN-ACK → Client\n(3) Client → ACK → Server\nConnection is now open. For HTTPS, TLS negotiation happens here too." },
+            { label: "HTTP Request Sent", icon: "📤", desc: "Client sends the HTTP request over the connection", side: "client", detail: "GET /api/users HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nAccept: application/json" },
+            { label: "Server Processing", icon: "⚙️", desc: "Server receives request, processes it, queries database", side: "server", detail: "Server:\n(1) Validates the request (auth, params)\n(2) Executes business logic\n(3) Queries the database\n(4) Formats the response\n(5) Sets response headers" },
+            { label: "HTTP Response Sent", icon: "📥", desc: "Server sends back status code, headers, and body", side: "server", detail: 'HTTP/1.1 200 OK\nContent-Type: application/json\nCache-Control: no-store\n\n{"id": 1, "name": "John"}' },
+            { label: "Browser Renders", icon: "🖼️", desc: "Client receives response and displays the result", side: "client", detail: "Browser parses JSON/HTML, updates the DOM, renders the UI. The user sees the result. The TCP connection may stay open (keep-alive) for future requests." },
+        ];
+        const sideColor = { client: BLUE, network: AMBER, server: GREEN };
+        const sideBg = { client: BLUE_LIGHT, network: AMBER_LIGHT, server: GREEN_LIGHT };
+        const sideLabel = { client: "CLIENT SIDE", network: "NETWORK", server: "SERVER SIDE" };
+
+        return (
+            <Section title="Step-by-Step Request-Response Cycle">
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                    {steps.map((s, i) => (
+                        <button key={i} onClick={() => setStep(i)} style={{ padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${step === i ? sideColor[s.side] : BORDER}`, background: step === i ? sideBg[s.side] : "#fff", color: step === i ? sideColor[s.side] : GRAY, fontSize: 11, fontWeight: step === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>
+                            {i + 1}. {s.label}
+                        </button>
+                    ))}
+                </div>
+                <div style={{ background: sideBg[steps[step].side], border: `2px solid ${sideColor[steps[step].side]}`, borderRadius: 10, padding: 18, marginBottom: 16 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                        <span style={{ fontSize: 32 }}>{steps[step].icon}</span>
+                        <div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: sideColor[steps[step].side], fontFamily: "Arial, sans-serif", letterSpacing: 1 }}>{sideLabel[steps[step].side]}</div>
+                            <div style={{ fontWeight: 700, fontSize: 15, color: sideColor[steps[step].side], fontFamily: "Georgia, serif" }}>Step {step + 1}: {steps[step].label}</div>
+                        </div>
+                    </div>
+                    <p style={{ margin: "0 0 10px", fontSize: 13, color: GRAY, fontFamily: "Arial, sans-serif" }}>{steps[step].desc}</p>
+                    <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 6, padding: 12, fontSize: 12, color: "#333", fontFamily: "monospace", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{steps[step].detail}</div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${BORDER}`, background: "#fff", opacity: step === 0 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12 }}>← Previous</button>
+                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", alignSelf: "center" }}>{step + 1} / {steps.length}</span>
+                    <button onClick={() => setStep(Math.min(steps.length - 1, step + 1))} disabled={step === steps.length - 1} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${GREEN}`, background: GREEN_LIGHT, color: GREEN, opacity: step === steps.length - 1 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700 }}>Next →</button>
+                </div>
+            </Section>
+        );
+    }
+
+    function MultiTier() {
+        return (
+            <Section title="1-Tier vs 2-Tier vs 3-Tier Architecture">
+                {[
+                    { title: "1-Tier (Monolithic)", desc: "Everything runs on one machine. UI, logic, and data are all together.", layers: [{ label: "UI + Business Logic + Database", color: GRAY, bg: "#f0f0f0", icon: "🖥️" }], example: "Example: A local desktop app like MS Access", pro: "Simple to build", con: "Not scalable, no separation of concerns" },
+                    { title: "2-Tier (Client-Server)", desc: "Client handles UI. Server handles data. Direct connection between them.", layers: [{ label: "Client (UI + some logic)", color: BLUE, bg: BLUE_LIGHT, icon: "💻" }, { label: "Database Server", color: AMBER, bg: AMBER_LIGHT, icon: "🗄️" }], example: "Example: A desktop app connecting directly to a database", pro: "Faster for small apps", con: "Business logic is in the client — hard to maintain and insecure" },
+                    { title: "3-Tier (Modern Web)", desc: "The industry standard. Three separate layers with clear responsibilities.", layers: [{ label: "Presentation Layer (Client / Browser)", color: BLUE, bg: BLUE_LIGHT, icon: "💻" }, { label: "Application Layer (API / Business Logic)", color: GREEN, bg: GREEN_LIGHT, icon: "⚙️" }, { label: "Data Layer (Database)", color: AMBER, bg: AMBER_LIGHT, icon: "🗄️" }], example: "Example: React frontend → Node.js API → PostgreSQL database", pro: "Scalable, secure, maintainable", con: "More complex to set up and test" },
+                ].map(({ title, desc, layers, example, pro, con }) => (
+                    <div key={title} style={{ border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: GREEN, marginBottom: 4, fontFamily: "Georgia, serif" }}>{title}</div>
+                        <div style={{ fontSize: 12, color: GRAY, marginBottom: 12, fontFamily: "Arial, sans-serif" }}>{desc}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                            {layers.map((l, i) => (
+                                <div key={i} style={{ background: l.bg, border: `1.5px solid ${l.color}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                                    <span style={{ fontSize: 18 }}>{l.icon}</span>
+                                    <span style={{ fontSize: 13, fontWeight: 700, color: l.color, fontFamily: "Arial, sans-serif" }}>{l.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ fontSize: 11, fontFamily: "Arial, sans-serif", color: "#555", marginBottom: 6 }}>{example}</div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <span style={{ fontSize: 11, background: GREEN_LIGHT, color: GREEN, padding: "2px 8px", borderRadius: 4, fontFamily: "Arial, sans-serif" }}>✓ {pro}</span>
+                            <span style={{ fontSize: 11, background: RED_LIGHT, color: RED, padding: "2px 8px", borderRadius: 4, fontFamily: "Arial, sans-serif" }}>✗ {con}</span>
+                        </div>
+                    </div>
+                ))}
+            </Section>
+        );
+    }
+
+    function RealWorld() {
+        return (
+            <div>
+                <Section title="What Happens When You Open Instagram">
+                    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden", marginBottom: 20 }}>
+                        {[
+                            { step: 1, action: "You open the app", who: "Client", detail: "App sends GET /feed with Authorization: Bearer <your_token>", color: BLUE, bg: BLUE_LIGHT },
+                            { step: 2, action: "DNS resolves instagram.com", who: "Network", detail: "IP address of Instagram's CDN/load balancer is returned", color: AMBER, bg: AMBER_LIGHT },
+                            { step: 3, action: "Load balancer receives request", who: "Server", detail: "Routes your request to one of thousands of API servers", color: GREEN, bg: GREEN_LIGHT },
+                            { step: 4, action: "API server authenticates you", who: "Server", detail: "Validates your token against the auth service", color: GREEN, bg: GREEN_LIGHT },
+                            { step: 5, action: "Feed algorithm runs", who: "Server", detail: "Queries multiple databases, ranking service, ML model for personalization", color: GREEN, bg: GREEN_LIGHT },
+                            { step: 6, action: "Response sent back", who: "Server → Client", detail: "200 OK with JSON array of posts, each with image URLs, captions, likes", color: AMBER, bg: AMBER_LIGHT },
+                            { step: 7, action: "App renders your feed", who: "Client", detail: "Images load from CDN, UI builds the feed, infinite scroll is set up", color: BLUE, bg: BLUE_LIGHT },
+                        ].map(({ step, action, who, detail, color, bg }) => (
+                            <div key={step} style={{ display: "flex", borderBottom: `1px solid ${BORDER}`, background: step % 2 === 0 ? "#fafafa" : "#fff" }}>
+                                <div style={{ width: 32, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color, fontFamily: "Arial, sans-serif" }}>{step}</span>
+                                </div>
+                                <div style={{ padding: "10px 14px", flex: 1 }}>
+                                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>
+                                        <span style={{ fontWeight: 700, fontSize: 13, color, fontFamily: "Arial, sans-serif" }}>{action}</span>
+                                        <span style={{ fontSize: 10, background: bg, color, padding: "1px 6px", borderRadius: 4, fontFamily: "Arial, sans-serif", border: `1px solid ${color}` }}>{who}</span>
+                                    </div>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{detail}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="Types of Servers in a Real App" color={BLUE}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        {[
+                            { icon: "🌐", label: "Web Server", desc: "Serves static files (HTML, CSS, JS, images)", example: "Nginx, Apache", color: BLUE, bg: BLUE_LIGHT },
+                            { icon: "⚙️", label: "API Server", desc: "Handles business logic and data processing", example: "Node.js, Django, Spring", color: GREEN, bg: GREEN_LIGHT },
+                            { icon: "🗄️", label: "Database Server", desc: "Stores and retrieves persistent data", example: "PostgreSQL, MySQL, MongoDB", color: AMBER, bg: AMBER_LIGHT },
+                            { icon: "🔐", label: "Auth Server", desc: "Handles login, tokens, sessions, OAuth", example: "Auth0, Keycloak, custom", color: RED, bg: RED_LIGHT },
+                            { icon: "📦", label: "Cache Server", desc: "Stores frequent responses to speed up delivery", example: "Redis, Memcached", color: BLUE, bg: BLUE_LIGHT },
+                            { icon: "⚖️", label: "Load Balancer", desc: "Distributes traffic across multiple servers", example: "AWS ALB, Nginx, HAProxy", color: GREEN, bg: GREEN_LIGHT },
+                        ].map(({ icon, label, desc, example, color, bg }) => (
+                            <div key={label} style={{ background: bg, border: `1.5px solid ${color}`, borderRadius: 8, padding: 12 }}>
+                                <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                                    <span style={{ fontSize: 18 }}>{icon}</span>
+                                    <span style={{ fontWeight: 700, fontSize: 12, color, fontFamily: "Arial, sans-serif" }}>{label}</span>
+                                </div>
+                                <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif", marginBottom: 4 }}>{desc}</div>
+                                <div style={{ fontSize: 10, color, fontFamily: "Arial, sans-serif", fontStyle: "italic" }}>{example}</div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function QAView() {
+        return (
+            <div>
+                <Section title="Where Bugs Live in the Client-Server Model" color={RED}>
+                    {[
+                        { layer: "Client-Side Bugs", color: BLUE, bg: BLUE_LIGHT, bugs: ["UI shows wrong data because it formats/rounds the API response", "Form sends wrong field names in the request body", "Missing Authorization header — request always fails with 401", "Double submission — user clicks twice, two requests fire", "Client caches old data and shows stale results"], how: "Inspect in Network tab → compare Payload and Response to UI" },
+                        { layer: "Network-Level Bugs", color: AMBER, bg: AMBER_LIGHT, bugs: ["Timeout — request takes too long, server doesn't respond in time", "CORS error — server doesn't allow requests from this origin", "SSL/TLS certificate expired — HTTPS connection fails", "DNS failure — domain cannot be resolved", "Request dropped — packet loss on unstable network"], how: "Network tab shows failed requests in red. Console shows CORS errors." },
+                        { layer: "Server-Side Bugs", color: GREEN, bg: GREEN_LIGHT, bugs: ["500 Internal Server Error — unhandled exception in server code", "Precision bug — DB stores 1946.2488, API returns 1946.25", "No authentication check — any user can access any resource", "Race condition — two requests modify same record simultaneously", "Missing validation — server accepts invalid or malicious data"], how: "Check API response body. Cross-validate with DB. Check server logs." },
+                    ].map(({ layer, color, bg, bugs, how }) => (
+                        <div key={layer} style={{ background: bg, border: `2px solid ${color}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+                            <div style={{ fontWeight: 700, fontSize: 14, color, marginBottom: 10, fontFamily: "Georgia, serif" }}>{layer}</div>
+                            {bugs.map((b, i) => (
+                                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                                    <span style={{ color: RED, fontWeight: 700, fontSize: 12, flexShrink: 0 }}>✕</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{b}</span>
+                                </div>
+                            ))}
+                            <div style={{ marginTop: 10, background: "rgba(255,255,255,0.6)", borderRadius: 6, padding: "8px 12px", fontSize: 11, color, fontFamily: "Arial, sans-serif", fontWeight: 700 }}>HOW TO FIND: {how}</div>
+                        </div>
+                    ))}
+                </Section>
+
+                <Section title="The Golden QA Rule" color={GREEN}>
+                    <div style={{ background: GREEN_LIGHT, border: `2px solid ${GREEN}`, borderRadius: 10, padding: 18 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
+                            {[
+                                { label: "UI Layer", icon: "🖥️", check: "What does the user see?", color: BLUE },
+                                { label: "API Layer", icon: "⚙️", check: "What does the response say?", color: GREEN },
+                                { label: "DB Layer", icon: "🗄️", check: "What is actually stored?", color: AMBER },
+                            ].map(({ label, icon, check, color }) => (
+                                <div key={label} style={{ textAlign: "center", padding: 12, background: "#fff", borderRadius: 8, border: `1px solid ${color}` }}>
+                                    <div style={{ fontSize: 24, marginBottom: 4 }}>{icon}</div>
+                                    <div style={{ fontWeight: 700, fontSize: 12, color, fontFamily: "Arial, sans-serif" }}>{label}</div>
+                                    <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 4 }}>{check}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: GREEN, fontFamily: "Georgia, serif" }}>
+                            All three must match. Any mismatch = a bug.
+                        </div>
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    const views = [BasicModel, RequestFlow, MultiTier, RealWorld, QAView];
+
+    function App() {
+        const [tab, setTab] = useState(0);
+        const View = views[tab];
+        return (
+            <div style={{ maxWidth: 820, margin: "0 auto", padding: "30px 16px" }}>
+                <div style={{ borderLeft: `4px solid ${GREEN}`, paddingLeft: 14, marginBottom: 24 }}>
+                    <p style={{ margin: 0, fontSize: 11, color: GREEN, fontWeight: 700, letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>QA INTERNSHIP — WEB FUNDAMENTALS</p>
+                    <h1 style={{ margin: "4px 0 0", fontSize: 26, fontWeight: 700, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>Client-Server Model</h1>
+                </div>
+
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24, borderBottom: `2px solid ${BORDER}`, paddingBottom: 12 }}>
+                    {tabs.map((t, i) => (
+                        <button key={t} onClick={() => setTab(i)} style={{ padding: "7px 14px", borderRadius: 6, border: `1.5px solid ${tab === i ? GREEN : BORDER}`, background: tab === i ? GREEN : "#fff", color: tab === i ? "#fff" : GRAY, fontSize: 12, fontWeight: tab === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>{t}</button>
+                    ))}
+                </div>
+
+                <View />
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+
+</body>
+</html>
