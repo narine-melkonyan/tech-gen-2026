@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Form — Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ───────────────────────────────────────── */
+:root {
+  --bg:        #0c0d0f;
+  --surface:   #131416;
+  --card:      #1a1c1f;
+  --border:    #2a2d31;
+  --border-focus: #f0a500;
+  --text:      #f0ede8;
+  --muted:     #6b6f76;
+  --accent:    #f0a500;
+  --accent-dim:#3d2c00;
+  --green:     #22c55e;
+  --green-dim: #0a2010;
+  --red:       #ef4444;
+  --red-dim:   #200a0a;
+  --blue:      #3b82f6;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --r:         10px;
+}
+
+/* ── Reset & Base ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ── Background grid ─────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* ── Layout ──────────────────────────────────────────── */
+.page {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  min-height: 100vh;
+}
+
+/* ── Left Panel ──────────────────────────────────────── */
+.left-panel {
+  padding: 52px 48px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 52px;
+}
+.brand-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+.brand-name {
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.form-heading {
+  font-family: var(--font-head);
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.form-heading span { color: var(--accent); }
+.form-sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin-bottom: 44px;
+  max-width: 420px;
+}
+
+/* ── Form ────────────────────────────────────────────── */
+form { flex: 1; display: flex; flex-direction: column; gap: 0; }
+
+.section-label {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.field-group { margin-bottom: 32px; }
+.fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fields-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+label span.req { color: var(--accent); margin-left: 2px; }
+
+.input-wrap { position: relative; }
+
+input, select, textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(240,165,0,0.12);
+  background: #1e2023;
+}
+textarea { resize: vertical; min-height: 90px; line-height: 1.55; }
+select { cursor: pointer; }
+select option { background: var(--card); }
+
+input.valid   { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+input.invalid { border-color: var(--red);   box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+select.valid  { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+select.invalid{ border-color: var(--red);   box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+
+/* icon inside input */
+.input-wrap .field-icon {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 0.95rem; pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+}
+.input-wrap:has(input.valid) .field-icon.ok,
+.input-wrap:has(select.valid) .field-icon.ok   { opacity: 1; color: var(--green); }
+.input-wrap:has(input.invalid) .field-icon.err,
+.input-wrap:has(select.invalid) .field-icon.err { opacity: 1; color: var(--red); }
+
+input:has(~ .field-icon) { padding-right: 38px; }
+
+.err-msg {
+  font-size: 0.77rem;
+  color: var(--red);
+  min-height: 16px;
+  font-family: var(--font-mono);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.err-msg.show { opacity: 1; transform: translateY(0); }
+
+/* ── Quantity stepper ────────────────────────────────── */
+.qty-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--card);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.qty-wrap:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(240,165,0,0.12);
+}
+.qty-wrap.valid   { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+.qty-wrap.invalid { border-color: var(--red);   box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+.qty-btn {
+  background: var(--surface);
+  border: none; color: var(--text);
+  width: 42px; height: 44px;
+  font-size: 1.2rem; cursor: pointer;
+  transition: background 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.qty-btn:hover { background: var(--accent-dim); color: var(--accent); }
+#quantity {
+  flex: 1; border: none; border-radius: 0;
+  text-align: center; font-family: var(--font-mono);
+  font-size: 1rem; font-weight: 500;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 4px;
+}
+#quantity:focus { box-shadow: none; border-color: transparent; }
+
+/* ── Priority badges ─────────────────────────────────── */
+.priority-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.priority-btn {
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.18s;
+}
+.priority-btn:hover { border-color: var(--muted); color: var(--text); }
+.priority-btn.selected[data-val="low"]    { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+.priority-btn.selected[data-val="medium"] { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.priority-btn.selected[data-val="high"]   { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+#priority-hidden { display: none; }
+
+/* ── Submit ──────────────────────────────────────────── */
+.submit-row {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 12px;
+}
+.btn-submit {
+  flex: 1;
+  padding: 15px 28px;
+  background: var(--accent);
+  color: #0c0d0f;
+  border: none;
+  border-radius: var(--r);
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(240,165,0,0.28); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-submit .btn-text  { transition: opacity 0.2s; }
+.btn-submit .btn-spin  { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+.btn-submit.loading .btn-text { opacity: 0; }
+.btn-submit.loading .btn-spin { opacity: 1; }
+
+.btn-reset {
+  padding: 15px 20px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+/* ── Spinner ─────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(12,13,15,0.3);
+  border-top-color: #0c0d0f;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Right Panel — API Console ───────────────────────── */
+.right-panel {
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  border-left: 1px solid var(--border);
+  position: sticky; top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.console-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.console-title {
+  font-family: var(--font-head);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.live-dot.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+.console-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.ctab {
+  flex: 1; padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.18s;
+}
+.ctab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.console-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.console-body::-webkit-scrollbar { width: 4px; }
+.console-body::-webkit-scrollbar-track { background: transparent; }
+.console-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* API status badge */
+.api-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.api-status.idle    { background: var(--card); color: var(--muted); }
+.api-status.sending { background: #0f2744; color: #93c5fd; }
+.api-status.success { background: var(--green-dim); color: var(--green); }
+.api-status.error   { background: var(--red-dim); color: var(--red); }
+
+/* Code block in console */
+.c-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  line-height: 1.75;
+  color: #a5f3fc;
+  overflow-x: auto;
+  margin: 10px 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.c-key   { color: #fbbf24; }
+.c-str   { color: #86efac; }
+.c-num   { color: #c4b5fd; }
+.c-null  { color: var(--muted); font-style: italic; }
+.c-bool  { color: #f472b6; }
+.c-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+
+/* Method badge */
+.method-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem; font-weight: 600;
+}
+.m-post { background: #1d4ed8; color: #bfdbfe; }
+.m-get  { background: #14532d; color: #86efac; }
+
+.url-line {
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  color: #a5f3fc;
+  word-break: break-all;
+}
+
+/* Timeline log */
+.log-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.log-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 0.78rem; padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--card);
+  border-left: 3px solid var(--border);
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.log-item.info  { border-left-color: var(--blue); }
+.log-item.ok    { border-left-color: var(--green); }
+.log-item.fail  { border-left-color: var(--red); }
+.log-item.warn  { border-left-color: var(--accent); }
+.log-time { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); flex-shrink: 0; }
+.log-text { color: var(--text); line-height: 1.45; }
+
+/* Validation summary panel */
+.val-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.val-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem;
+  padding: 8px 10px; border-radius: 6px;
+}
+.val-item.ok   { background: var(--green-dim); color: var(--green); }
+.val-item.err  { background: var(--red-dim);   color: var(--red); }
+.val-item.idle { background: var(--card);       color: var(--muted); }
+.val-icon { font-size: 0.85rem; flex-shrink: 0; }
+.val-name { font-family: var(--font-mono); font-size: 0.75rem; }
+.val-msg  { font-size: 0.75rem; margin-left: auto; opacity: 0.7; }
+
+/* Success overlay */
+.success-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(10,11,13,0.9);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.success-overlay.show { opacity: 1; pointer-events: all; }
+.success-card {
+  background: var(--card);
+  border: 1px solid var(--green);
+  border-radius: 16px;
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 420px;
+  box-shadow: 0 0 60px rgba(34,197,94,0.15);
+  transform: scale(0.92);
+  transition: transform 0.3s;
+}
+.success-overlay.show .success-card { transform: scale(1); }
+.success-icon { font-size: 3rem; margin-bottom: 16px; }
+.success-title {
+  font-family: var(--font-head);
+  font-size: 1.5rem; font-weight: 800;
+  color: var(--green); margin-bottom: 8px;
+}
+.success-sub { color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 24px; }
+.success-id {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--green-dim);
+  color: var(--green);
+  padding: 8px 16px; border-radius: 6px;
+  margin-bottom: 24px; display: inline-block;
+}
+.btn-close-success {
+  padding: 12px 28px;
+  background: var(--green);
+  color: #0a1f0f;
+  border: none; border-radius: 8px;
+  font-family: var(--font-head);
+  font-size: 0.88rem; font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.18s;
+}
+.btn-close-success:hover { opacity: 0.85; }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .page { grid-template-columns: 1fr; }
+  .right-panel { position: static; height: auto; border-left: none; border-top: 1px solid var(--border); }
+  .left-panel { padding: 32px 24px; }
+  .fields-row, .fields-row-3 { grid-template-columns: 1fr; }
+  .form-heading { font-size: 2rem; }
+  .right-panel { min-height: 400px; }
+  .console-body { max-height: 360px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══ LEFT — FORM ═══ -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-name">Workshop · API Form</span>
+    </div>
+
+    <h1 class="form-heading">New <span>Product</span><br>Order</h1>
+    <p class="form-sub">Fill in the form to submit an order to the REST API. Real-time validation and live API console on the right.</p>
+
+    <form id="order-form" novalidate>
+
+      <!-- ── CUSTOMER INFO ── -->
+      <div class="field-group">
+        <div class="section-label">Customer Details</div>
+        <div class="fields-row">
+          <div class="field">
+            <label for="firstName">First Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="firstName" name="firstName" placeholder="Alice" autocomplete="given-name">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="firstName-err"></span>
+          </div>
+          <div class="field">
+            <label for="lastName">Last Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="lastName" name="lastName" placeholder="Johnson" autocomplete="family-name">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="lastName-err"></span>
+          </div>
+        </div>
+        <div class="fields-row" style="margin-top:14px">
+          <div class="field">
+            <label for="email">Email Address <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="email" id="email" name="email" placeholder="alice@example.com" autocomplete="email">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="email-err"></span>
+          </div>
+          <div class="field">
+            <label for="phone">Phone Number</label>
+            <div class="input-wrap">
+              <input type="tel" id="phone" name="phone" placeholder="+1 555 000 0000" autocomplete="tel">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="phone-err"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PRODUCT ── -->
+      <div class="field-group">
+        <div class="section-label">Product Details</div>
+        <div class="field">
+          <label for="productName">Product Name <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input type="text" id="productName" name="productName" placeholder="e.g. Wireless Headphones Pro">
+            <span class="field-icon ok">✓</span>
+            <span class="field-icon err">✕</span>
+          </div>
+          <span class="err-msg" id="productName-err"></span>
+        </div>
+
+        <div class="fields-row" style="margin-top:14px">
+          <div class="field">
+            <label for="category">Category <span class="req">*</span></label>
+            <div class="input-wrap">
+              <select id="category" name="category">
+                <option value="">Select a category…</option>
+                <option value="electronics">Electronics</option>
+                <option value="furniture">Furniture</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="sports">Sports & Outdoors</option>
+                <option value="food">Food & Beverage</option>
+                <option value="other">Other</option>
+              </select>
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="category-err"></span>
+          </div>
+          <div class="field">
+            <label for="sku">SKU / Product ID</label>
+            <div class="input-wrap">
+              <input type="text" id="sku" name="sku" placeholder="e.g. WHP-PRO-001" style="font-family:var(--font-mono)">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="sku-err"></span>
+          </div>
+        </div>
+
+        <div class="fields-row-3" style="margin-top:14px">
+          <div class="field">
+            <label for="price">Unit Price (USD) <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="number" id="price" name="price" placeholder="0.00" min="0.01" step="0.01">
+              <span class="field-icon ok">✓</span>
+              <span class="field-icon err">✕</span>
+            </div>
+            <span class="err-msg" id="price-err"></span>
+          </div>
+          <div class="field">
+            <label for="quantity">Quantity <span class="req">*</span></label>
+            <div class="qty-wrap" id="qty-wrap">
+              <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input type="number" id="quantity" name="quantity" value="1" min="1" max="999" readonly>
+              <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <span class="err-msg" id="quantity-err"></span>
+          </div>
+          <div class="field">
+            <label>Total</label>
+            <div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:var(--r);padding:12px 14px;font-family:var(--font-mono);font-size:0.95rem;color:var(--accent);font-weight:500;min-height:46px;display:flex;align-items:center" id="total-display">$0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ORDER OPTIONS ── -->
+      <div class="field-group">
+        <div class="section-label">Order Options</div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Priority Level <span class="req">*</span></label>
+          <div class="priority-row">
+            <button type="button" class="priority-btn" data-val="low"    onclick="setPriority('low')">🟢 Low</button>
+            <button type="button" class="priority-btn" data-val="medium" onclick="setPriority('medium')">🟡 Medium</button>
+            <button type="button" class="priority-btn" data-val="high"   onclick="setPriority('high')">🔴 High</button>
+          </div>
+          <input type="hidden" id="priority-hidden" name="priority">
+          <span class="err-msg" id="priority-err"></span>
+        </div>
+        <div class="field">
+          <label for="shippingAddress">Shipping Address <span class="req">*</span></label>
+          <textarea id="shippingAddress" name="shippingAddress" placeholder="123 Main St, Apt 4B&#10;New York, NY 10001&#10;United States"></textarea>
+          <span class="err-msg" id="shippingAddress-err"></span>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label for="notes">Order Notes (optional)</label>
+          <textarea id="notes" name="notes" placeholder="Special instructions, gift wrapping, delivery preferences…" style="min-height:70px"></textarea>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn-submit" id="btn-submit">
+          <span class="btn-text">Submit Order →</span>
+          <span class="btn-spin"><div class="spinner"></div></span>
+        </button>
+        <button type="button" class="btn-reset" onclick="resetForm()">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ═══ RIGHT — API CONSOLE ═══ -->
+  <div class="right-panel">
+    <div class="console-header">
+      <div class="console-title">
+        <div class="live-dot" id="live-dot"></div>
+        API Console
+      </div>
+      <div class="api-status idle" id="api-status">Idle</div>
+    </div>
+
+    <div class="console-tabs">
+      <div class="ctab active" onclick="switchTab('request')">Request</div>
+      <div class="ctab" onclick="switchTab('response')">Response</div>
+      <div class="ctab" onclick="switchTab('validation')">Validation</div>
+      <div class="ctab" onclick="switchTab('log')">Log</div>
+    </div>
+
+    <div class="console-body">
+
+      <!-- REQUEST TAB -->
+      <div class="panel active" id="tab-request">
+        <div class="c-label">Endpoint</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <span class="method-badge m-post">POST</span>
+          <span class="url-line" id="req-url">http://localhost:3000/api/products</span>
+        </div>
+        <div class="c-label">Headers</div>
+        <div class="c-block" style="font-size:0.74rem;margin-bottom:12px"><span class="c-key">Content-Type</span>: <span class="c-str">"application/json"</span>
+<span class="c-key">Accept</span>: <span class="c-str">"application/json"</span></div>
+        <div class="c-label">Request Body (live preview)</div>
+        <div class="c-block" id="req-preview">
+<span class="c-null">// Fill the form to see the request body...</span>
+        </div>
+      </div>
+
+      <!-- RESPONSE TAB -->
+      <div class="panel" id="tab-response">
+        <div id="res-empty" style="color:var(--muted);font-size:0.84rem;padding:10px 0">No response yet. Submit the form to see the API response.</div>
+        <div id="res-content" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+            <div class="c-label" style="margin:0">Status</div>
+            <span id="res-status-badge" class="api-status idle">—</span>
+            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted)" id="res-time-label"></span>
+          </div>
+          <div class="c-label">Response Body</div>
+          <div class="c-block" id="res-body"></div>
+        </div>
+      </div>
+
+      <!-- VALIDATION TAB -->
+      <div class="panel" id="tab-validation">
+        <ul class="val-list" id="val-list"></ul>
+      </div>
+
+      <!-- LOG TAB -->
+      <div class="panel" id="tab-log">
+        <ul class="log-list" id="log-list">
+          <li class="log-item info">
+            <span class="log-time" id="log-init-time"></span>
+            <span class="log-text">Console initialized. Waiting for form interaction.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Order Placed!</div>
+    <div class="success-sub">Your order was successfully submitted to the API and a new product record was created.</div>
+    <div class="success-id" id="success-id">ID: —</div>
+    <button class="btn-close-success" onclick="closeSuccess()">Place Another Order</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const API_BASE = 'http://localhost:3000';
+const API_URL  = `${API_BASE}/api/products`;
+
+// ══════════════════════════════════════════════════════
+//  VALIDATION RULES
+// ══════════════════════════════════════════════════════
+const rules = {
+  firstName:       { required: true,  min: 2,  max: 50,  label: 'First Name' },
+  lastName:        { required: true,  min: 2,  max: 50,  label: 'Last Name' },
+  email:           { required: true,  type: 'email',     label: 'Email' },
+  phone:           { required: false, type: 'phone',     label: 'Phone' },
+  productName:     { required: true,  min: 2,  max: 120, label: 'Product Name' },
+  category:        { required: true,  type: 'select',    label: 'Category' },
+  sku:             { required: false, type: 'sku',       label: 'SKU' },
+  price:           { required: true,  type: 'price',     label: 'Unit Price' },
+  quantity:        { required: true,  type: 'qty',       label: 'Quantity' },
+  priority:        { required: true,  type: 'priority',  label: 'Priority' },
+  shippingAddress: { required: true,  min: 10, max: 300, label: 'Shipping Address' },
+};
+
+function validate(field, value) {
+  const r = rules[field];
+  if (!r) return null;
+  if (r.required && (!value || !value.trim())) return `${r.label} is required`;
+  if (!value || !value.trim()) return null; // optional & empty = ok
+
+  if (r.type === 'email') {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Enter a valid email address';
+  }
+  if (r.type === 'phone') {
+    if (value && !/^[\+\d\s\-\(\)]{7,20}$/.test(value)) return 'Enter a valid phone number';
+  }
+  if (r.type === 'select') {
+    if (!value) return `${r.label} is required`;
+  }
+  if (r.type === 'sku') {
+    if (value && !/^[A-Za-z0-9\-\_]{3,30}$/.test(value)) return 'SKU: 3–30 chars, letters/numbers/- only';
+  }
+  if (r.type === 'price') {
+    const n = parseFloat(value);
+    if (isNaN(n) || n <= 0) return 'Price must be greater than 0';
+    if (n > 999999) return 'Price seems too high';
+  }
+  if (r.type === 'qty') {
+    const n = parseInt(value);
+    if (isNaN(n) || n < 1) return 'Quantity must be at least 1';
+    if (n > 999) return 'Max quantity is 999';
+  }
+  if (r.type === 'priority') {
+    if (!['low','medium','high'].includes(value)) return 'Select a priority level';
+  }
+  if (r.min && value.trim().length < r.min) return `Minimum ${r.min} characters`;
+  if (r.max && value.trim().length > r.max) return `Maximum ${r.max} characters`;
+  return null;
+}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+const touched = {};
+const valState = {};
+Object.keys(rules).forEach(k => { valState[k] = 'idle'; touched[k] = false; });
+
+// ══════════════════════════════════════════════════════
+//  DOM HELPERS
+// ══════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+function setFieldState(field, state, msg) {
+  valState[field] = state;
+  const el = $(`${field}`) || document.querySelector(`[name="${field}"]`);
+  const errEl = $(`${field}-err`);
+  if (!el) return;
+
+  el.classList.remove('valid','invalid');
+  if (state === 'ok')  el.classList.add('valid');
+  if (state === 'err') el.classList.add('invalid');
+
+  // qty-wrap special
+  if (field === 'quantity') {
+    const w = $('qty-wrap');
+    w.classList.remove('valid','invalid');
+    if (state === 'ok')  w.classList.add('valid');
+    if (state === 'err') w.classList.add('invalid');
+  }
+
+  if (errEl) {
+    errEl.textContent = msg || '';
+    errEl.classList.toggle('show', !!msg);
+  }
+  updateValidationPanel();
+  updateRequestPreview();
+}
+
+function getVal(id) {
+  const el = $(id);
+  if (!el) return '';
+  return el.value || '';
+}
+
+// ══════════════════════════════════════════════════════
+//  LIVE VALIDATION — wire up inputs
+// ══════════════════════════════════════════════════════
+function validateField(fieldId) {
+  const val = fieldId === 'priority' ? getVal('priority-hidden') : getVal(fieldId);
+  const err = validate(fieldId, val);
+  if (err) setFieldState(fieldId, 'err', err);
+  else if (val && val.trim()) setFieldState(fieldId, 'ok', null);
+  else setFieldState(fieldId, 'idle', null);
+}
+
+['firstName','lastName','email','phone','productName','sku','shippingAddress','notes'].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener('input', () => { touched[id] = true; validateField(id); });
+  el.addEventListener('blur',  () => { touched[id] = true; validateField(id); });
+});
+
+$('category').addEventListener('change', () => {
+  touched['category'] = true;
+  validateField('category');
+});
+
+$('price').addEventListener('input',  () => { touched['price'] = true; validateField('price'); updateTotal(); });
+$('price').addEventListener('blur',   () => { touched['price'] = true; validateField('price'); });
+$('quantity').addEventListener('input',() => { touched['quantity'] = true; validateField('quantity'); updateTotal(); });
+
+// ══════════════════════════════════════════════════════
+//  QUANTITY STEPPER
+// ══════════════════════════════════════════════════════
+function changeQty(delta) {
+  const el = $('quantity');
+  let v = parseInt(el.value) || 1;
+  v = Math.max(1, Math.min(999, v + delta));
+  el.value = v;
+  touched['quantity'] = true;
+  validateField('quantity');
+  updateTotal();
+}
+
+// ══════════════════════════════════════════════════════
+//  TOTAL CALCULATOR
+// ══════════════════════════════════════════════════════
+function updateTotal() {
+  const p = parseFloat(getVal('price')) || 0;
+  const q = parseInt(getVal('quantity')) || 0;
+  const total = (p * q).toFixed(2);
+  $('total-display').textContent = `$${parseFloat(total).toLocaleString('en-US', {minimumFractionDigits:2})}`;
+}
+
+// ══════════════════════════════════════════════════════
+//  PRIORITY SELECTOR
+// ══════════════════════════════════════════════════════
+function setPriority(val) {
+  document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelector(`.priority-btn[data-val="${val}"]`).classList.add('selected');
+  $('priority-hidden').value = val;
+  touched['priority'] = true;
+  setFieldState('priority', 'ok', null);
+  updateRequestPreview();
+}
+
+// ══════════════════════════════════════════════════════
+//  REQUEST PREVIEW
+// ══════════════════════════════════════════════════════
+function buildPayload() {
+  return {
+    name:     `${getVal('firstName')} ${getVal('lastName')} — ${getVal('productName')}`.trim(),
+    price:    parseFloat(getVal('price')) || 0,
+    category: getVal('category'),
+    stock:    parseInt(getVal('quantity')) || 1,
+    customer: {
+      firstName: getVal('firstName'),
+      lastName:  getVal('lastName'),
+      email:     getVal('email'),
+      phone:     getVal('phone') || null,
+    },
+    order: {
+      sku:             getVal('sku') || null,
+      priority:        getVal('priority-hidden') || null,
+      shippingAddress: getVal('shippingAddress'),
+      notes:           getVal('notes') || null,
+      total:           ((parseFloat(getVal('price')) || 0) * (parseInt(getVal('quantity')) || 0)).toFixed(2),
+    }
+  };
+}
+
+function colorizeJSON(obj, indent = 0) {
+  const pad = ' '.repeat(indent * 2);
+  const padI = ' '.repeat((indent + 1) * 2);
+  if (obj === null) return `<span class="c-null">null</span>`;
+  if (typeof obj === 'boolean') return `<span class="c-bool">${obj}</span>`;
+  if (typeof obj === 'number')  return `<span class="c-num">${obj}</span>`;
+  if (typeof obj === 'string')  return `<span class="c-str">"${obj}"</span>`;
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return '[]';
+    return `[\n${obj.map(v => padI + colorizeJSON(v, indent+1)).join(',\n')}\n${pad}]`;
+  }
+  if (typeof obj === 'object') {
+    const entries = Object.entries(obj);
+    if (!entries.length) return '{}';
+    return `{\n${entries.map(([k,v]) => `${padI}<span class="c-key">"${k}"</span>: ${colorizeJSON(v, indent+1)}`).join(',\n')}\n${pad}}`;
+  }
+  return String(obj);
+}
+
+function updateRequestPreview() {
+  const payload = buildPayload();
+  $('req-preview').innerHTML = colorizeJSON(payload);
+}
+
+// ══════════════════════════════════════════════════════
+//  VALIDATION PANEL
+// ══════════════════════════════════════════════════════
+function updateValidationPanel() {
+  const list = $('val-list');
+  const fields = Object.keys(rules);
+  list.innerHTML = fields.map(f => {
+    const r = rules[f];
+    const state = valState[f];
+    const isMandatory = r.required;
+    let icon = '○'; let cls = 'idle'; let msg = isMandatory ? 'required' : 'optional';
+    if (state === 'ok')  { icon = '✓'; cls = 'ok';  msg = 'valid'; }
+    if (state === 'err') { icon = '✕'; cls = 'err'; msg = 'invalid'; }
+    return `<li class="val-item ${cls}">
+      <span class="val-icon">${icon}</span>
+      <span class="val-name">${r.label}</span>
+      <span class="val-msg">${msg}</span>
+    </li>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  LOG
+// ══════════════════════════════════════════════════════
+function addLog(msg, type = 'info') {
+  const list = $('log-list');
+  const li = document.createElement('li');
+  li.className = `log-item ${type}`;
+  const now = new Date();
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+  li.innerHTML = `<span class="log-time">${t}</span><span class="log-text">${msg}</span>`;
+  list.prepend(li);
+}
+
+// ══════════════════════════════════════════════════════
+//  TAB SWITCHER
+// ══════════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.ctab').forEach((t,i) => {
+    const ids = ['request','response','validation','log'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $(`tab-${id}`).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════
+//  FORM SUBMIT
+// ══════════════════════════════════════════════════════
+$('order-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Touch all fields and validate
+  Object.keys(rules).forEach(f => {
+    touched[f] = true;
+    validateField(f);
+  });
+
+  const hasErrors = Object.keys(rules).some(f => {
+    const val = f === 'priority' ? getVal('priority-hidden') : getVal(f);
+    return !!validate(f, val);
+  });
+
+  if (hasErrors) {
+    addLog('Form has validation errors — fix them before submitting', 'warn');
+    switchTab('validation');
+    return;
+  }
+
+  // UI — loading state
+  const btn = $('btn-submit');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  $('live-dot').classList.add('active');
+  setApiStatus('sending', 'Sending…');
+  addLog(`POST → ${API_URL}`, 'info');
+  switchTab('request');
+
+  const payload = buildPayload();
+  const startTime = Date.now();
+
+  try {
+    const res = await fetch(API_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+
+    const elapsed = Date.now() - startTime;
+    const data = await res.json();
+
+    $('res-empty').style.display = 'none';
+    $('res-content').style.display = 'block';
+    $('res-time-label').textContent = `${elapsed}ms`;
+
+    if (res.ok) {
+      setApiStatus('success', `${res.status} OK`);
+      $('res-status-badge').className = 'api-status success';
+      $('res-status-badge').textContent = `${res.status} ${res.statusText}`;
+      $('res-body').innerHTML = colorizeJSON(data);
+      addLog(`✓ ${res.status} Created — ${elapsed}ms`, 'ok');
+      switchTab('response');
+
+      const newId = data?.data?.id || data?.id || '—';
+      $('success-id').textContent = `Order ID: ${newId}`;
+      setTimeout(() => $('success-overlay').classList.add('show'), 300);
+    } else {
+      setApiStatus('error', `${res.status} Error`);
+      $('res-status-badge').className = 'api-status error';
+      $('res-status-badge').textContent = `${res.status} ${res.statusText}`;
+      $('res-body').innerHTML = colorizeJSON(data);
+      addLog(`✕ ${res.status} ${res.statusText} — check response tab`, 'fail');
+      switchTab('response');
+    }
+
+  } catch (err) {
+    const elapsed = Date.now() - startTime;
+    setApiStatus('error', 'Network Error');
+    $('res-empty').style.display = 'none';
+    $('res-content').style.display = 'block';
+    $('res-status-badge').className = 'api-status error';
+    $('res-status-badge').textContent = 'Network Error';
+    $('res-time-label').textContent = `${elapsed}ms`;
+
+    // Simulate success response for workshop demo when server is offline
+    const mockData = {
+      success: true,
+      data: { id: Math.floor(Math.random() * 9000 + 1000), ...payload, _note: 'MOCK — server offline' }
+    };
+    $('res-body').innerHTML = colorizeJSON(mockData);
+    addLog(`⚠ Network error (server offline?) — showing mock response`, 'warn');
+    addLog(`Tip: run "npm run dev" in your rest-api project folder`, 'info');
+    switchTab('response');
+
+    // Still show success overlay in workshop/demo mode
+    const newId = mockData.data.id;
+    $('success-id').textContent = `Mock Order ID: ${newId}`;
+    setTimeout(() => $('success-overlay').classList.add('show'), 300);
+    setApiStatus('success', 'Mock 201');
+  }
+
+  btn.classList.remove('loading');
+  btn.disabled = false;
+  $('live-dot').classList.remove('active');
+});
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function setApiStatus(state, label) {
+  const el = $('api-status');
+  el.className = `api-status ${state}`;
+  el.textContent = label;
+}
+
+function resetForm() {
+  $('order-form').reset();
+  $('quantity').value = 1;
+  $('priority-hidden').value = '';
+  $('total-display').textContent = '$0.00';
+  document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+  Object.keys(rules).forEach(f => { touched[f] = false; setFieldState(f, 'idle', null); valState[f] = 'idle'; });
+  $('req-preview').innerHTML = '<span class="c-null">// Fill the form to see the request body...</span>';
+  setApiStatus('idle', 'Idle');
+  addLog('Form reset', 'info');
+  updateValidationPanel();
+}
+
+function closeSuccess() {
+  $('success-overlay').classList.remove('show');
+  resetForm();
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+$('log-init-time').textContent = (() => {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}.000`;
+})();
+updateValidationPanel();
+updateRequestPreview();
+</script>
+</body>
+</html>
