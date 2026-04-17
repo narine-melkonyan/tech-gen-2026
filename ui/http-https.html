@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>HTTP & HTTPS — QA Internship</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f5f5f5; font-family: Arial, sans-serif; }
+        button { cursor: pointer; transition: opacity 0.15s; }
+        button:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+    const { useState } = React;
+
+    const GREEN = "#1a5c35";
+    const GREEN_LIGHT = "#e8f5ee";
+    const BLUE = "#185FA5";
+    const BLUE_LIGHT = "#e6f1fb";
+    const AMBER = "#854f0b";
+    const AMBER_LIGHT = "#faeeda";
+    const RED = "#a32d2d";
+    const RED_LIGHT = "#fcebeb";
+    const PURPLE = "#5b21b6";
+    const PURPLE_LIGHT = "#ede9fe";
+    const GRAY = "#444";
+    const BORDER = "#ddd";
+
+    const tabs = ["HTTP Versions", "TLS Handshake", "SSL Certificates", "HTTP vs HTTPS", "What Gets Encrypted"];
+
+    function Section({ title, color = GREEN, children }) {
+        return (
+            <div style={{ marginBottom: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                    <div style={{ width: 4, height: 20, background: color, borderRadius: 2 }} />
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color, fontFamily: "Georgia, serif" }}>{title}</h3>
+                </div>
+                {children}
+            </div>
+        );
+    }
+
+    function HttpVersions() {
+        const versions = [
+            {
+                v: "HTTP/0.9", year: "1991", color: GRAY, bg: "#f0f0f0",
+                headline: "The original — just GET, just HTML",
+                features: ["Only GET method", "No headers at all", "No status codes", "Connection closes after every response", "Response is just raw HTML text"],
+                limits: ["No way to send data (no POST)", "No metadata about the response", "No version negotiation"],
+                example: "Request:  GET /index.html\nResponse: <html>...</html>"
+            },
+            {
+                v: "HTTP/1.0", year: "1996", color: AMBER, bg: AMBER_LIGHT,
+                headline: "Headers introduced. POST added. Still one request per connection.",
+                features: ["Request headers (Host, User-Agent, etc.)", "Response headers (Content-Type, Content-Length)", "Status codes (200, 404, 500...)", "More methods: GET, POST, HEAD", "Content negotiation via Accept header"],
+                limits: ["New TCP connection per request (slow!)", "No keep-alive by default", "No chunked transfer", "Head-of-line blocking per connection"],
+                example: "GET /page.html HTTP/1.0\nHost: example.com\nUser-Agent: Mozilla/1.0\n\n--- response ---\nHTTP/1.0 200 OK\nContent-Type: text/html\nContent-Length: 1234\n\n<html>...</html>"
+            },
+            {
+                v: "HTTP/1.1", year: "1997", color: GREEN, bg: GREEN_LIGHT,
+                headline: "Keep-alive by default. The standard for 15+ years.",
+                features: ["Persistent connections (keep-alive by default)", "Pipelining (send multiple requests without waiting for each response)", "Chunked transfer encoding (stream data of unknown size)", "Host header required (enables virtual hosting)", "New methods: PUT, DELETE, OPTIONS, TRACE, PATCH", "Cache headers (ETag, If-None-Match, Cache-Control)", "Range requests (resume downloads)"],
+                limits: ["Head-of-line blocking: a slow response blocks later ones on same connection", "Headers sent as plain text (repetitive, large)", "No server push", "Browsers work around HOL by opening 6–8 parallel connections per host"],
+                example: "GET /api/users HTTP/1.1\nHost: api.example.com\nConnection: keep-alive\nAccept: application/json\n\n--- subsequent request on same connection ---\nGET /api/orders HTTP/1.1\nHost: api.example.com"
+            },
+            {
+                v: "HTTP/2", year: "2015", color: BLUE, bg: BLUE_LIGHT,
+                headline: "Binary protocol. Multiplexing. Header compression. Huge speed boost.",
+                features: ["Binary framing layer (not text) — more efficient parsing", "Multiplexing: multiple requests and responses in parallel on ONE connection", "Header compression (HPACK) — removes redundant headers", "Stream prioritization — important resources first", "Server Push — server sends CSS/JS before browser asks", "TLS practically required (browsers only support HTTP/2 over HTTPS)"],
+                limits: ["Head-of-line blocking still exists at TCP level (one lost packet blocks all streams)", "Server push is complex and often misconfigured", "Not all CDNs/proxies support it fully"],
+                example: "Binary frames (not human-readable text)\nFrame types: HEADERS, DATA, PRIORITY, RST_STREAM,\n             SETTINGS, PUSH_PROMISE, PING, GOAWAY\n\nMultiple streams on one TCP connection:\nStream 1: GET /api/users\nStream 3: GET /api/orders    ← concurrent, no waiting\nStream 5: GET /api/products  ← all in parallel"
+            },
+            {
+                v: "HTTP/3", year: "2022", color: PURPLE, bg: PURPLE_LIGHT,
+                headline: "Built on QUIC (UDP). Eliminates TCP head-of-line blocking.",
+                features: ["Runs over QUIC (UDP-based transport), not TCP", "TLS 1.3 built into QUIC — 0-RTT connection resumption", "Eliminates TCP head-of-line blocking — streams are independent", "Faster connection setup (0-1 RTT vs 1-3 RTT for TCP+TLS)", "Better performance on lossy networks (mobile, satellite)", "Connection migration: switch from Wi-Fi to 4G without reconnecting"],
+                limits: ["Newer — not all servers/proxies support it yet", "UDP often blocked by some corporate firewalls", "Higher CPU usage (encryption/decryption in userspace vs kernel-space TCP)"],
+                example: "Uses QUIC protocol (RFC 9000)\nQUIC = HTTP/3's transport layer\n\nEach HTTP/3 stream is independent:\n→ A lost UDP packet only affects ONE stream\n→ Other streams continue uninterrupted\n\nReal-world: Google, YouTube, Cloudflare, Facebook use HTTP/3"
+            },
+        ];
+
+        const [sel, setSel] = useState(2);
+
+        return (
+            <div>
+                <Section title="HTTP Version History">
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                        {versions.map((v, i) => (
+                            <button key={v.v} onClick={() => setSel(i)} style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${sel === i ? v.color : BORDER}`, background: sel === i ? v.bg : "#fff", color: sel === i ? v.color : GRAY, fontSize: 12, fontWeight: sel === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>
+                                {v.v}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div style={{ background: versions[sel].bg, border: `2px solid ${versions[sel].color}`, borderRadius: 10, padding: 18, marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                            <div style={{ background: versions[sel].color, color: "#fff", padding: "4px 12px", borderRadius: 20, fontWeight: 700, fontSize: 14, fontFamily: "monospace" }}>{versions[sel].v}</div>
+                            <div style={{ fontSize: 12, color: versions[sel].color, fontFamily: "Arial, sans-serif" }}>{versions[sel].year}</div>
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: versions[sel].color, fontFamily: "Georgia, serif", marginBottom: 12 }}>{versions[sel].headline}</div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: GREEN, fontFamily: "Arial, sans-serif", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Features Added</div>
+                                {versions[sel].features.map((f, i) => (
+                                    <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                        <span style={{ color: GREEN, fontSize: 11 }}>✓</span>
+                                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{f}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: RED, fontFamily: "Arial, sans-serif", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>Limitations</div>
+                                {versions[sel].limits.map((l, i) => (
+                                    <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                        <span style={{ color: RED, fontSize: 11 }}>✗</span>
+                                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{l}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 6, padding: 12, fontFamily: "monospace", fontSize: 11, color: "#333", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{versions[sel].example}</div>
+                    </div>
+                </Section>
+
+                <Section title="Evolution at a Glance" color={AMBER}>
+                    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden" }}>
+                        {[
+                            { aspect: "Transport", v10: "TCP, new per req", v11: "TCP, keep-alive", v2: "TCP, multiplexed", v3: "QUIC (UDP)" },
+                            { aspect: "Encoding", v10: "Text", v11: "Text", v2: "Binary", v3: "Binary" },
+                            { aspect: "Multiplexing", v10: "No", v11: "Pipelining (limited)", v2: "Yes", v3: "Yes (independent)" },
+                            { aspect: "Header compress", v10: "No", v11: "No", v2: "HPACK", v3: "QPACK" },
+                            { aspect: "Server Push", v10: "No", v11: "No", v2: "Yes", v3: "Yes" },
+                            { aspect: "TLS required?", v10: "No", v11: "No", v2: "Effectively yes", v3: "Yes (built-in)" },
+                            { aspect: "HOL blocking", v10: "Per-connection", v11: "Per-connection", v2: "TCP level", v3: "None" },
+                        ].map((row, i) => (
+                            <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 1fr 1fr 1fr 1fr", borderBottom: i < 6 ? `1px solid ${BORDER}` : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                                <div style={{ padding: "8px 12px", fontSize: 11, fontWeight: 700, color: AMBER, borderRight: `1px solid ${BORDER}`, fontFamily: "Arial, sans-serif" }}>{row.aspect}</div>
+                                <div style={{ padding: "8px 12px", fontSize: 11, color: GRAY, borderRight: `1px solid ${BORDER}`, fontFamily: "monospace" }}>{row.v10}</div>
+                                <div style={{ padding: "8px 12px", fontSize: 11, color: GRAY, borderRight: `1px solid ${BORDER}`, fontFamily: "monospace" }}>{row.v11}</div>
+                                <div style={{ padding: "8px 12px", fontSize: 11, color: BLUE, borderRight: `1px solid ${BORDER}`, fontFamily: "monospace" }}>{row.v2}</div>
+                                <div style={{ padding: "8px 12px", fontSize: 11, color: PURPLE, fontFamily: "monospace" }}>{row.v3}</div>
+                            </div>
+                        ))}
+                        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr 1fr 1fr 1fr", background: "#f0f0f0", borderTop: `1px solid ${BORDER}` }}>
+                            <div style={{ padding: "6px 12px" }} />
+                            {["HTTP/1.0", "HTTP/1.1", "HTTP/2", "HTTP/3"].map((v, i) => (
+                                <div key={v} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: [GRAY, GREEN, BLUE, PURPLE][i], fontFamily: "Arial, sans-serif", borderLeft: `1px solid ${BORDER}` }}>{v}</div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function TlsHandshake() {
+        const [step, setStep] = useState(0);
+        const steps = [
+            {
+                label: "Client Hello", icon: "👋", from: "Client → Server",
+                color: BLUE, bg: BLUE_LIGHT,
+                desc: "Client initiates TLS and tells the server what it supports.",
+                detail: "Client Hello message contains:\n  • TLS version supported (e.g. TLS 1.3)\n  • Random bytes (client_random) — 32 bytes, used later for key derivation\n  • Session ID (for resuming previous sessions)\n  • Cipher suites supported:\n      TLS_AES_256_GCM_SHA384\n      TLS_CHACHA20_POLY1305_SHA256\n      TLS_AES_128_GCM_SHA256\n  • Extensions:\n      SNI (Server Name Indication) — which domain\n      Supported groups (ECDHE curves)\n      Signature algorithms\n\nSNI is sent in plaintext — network observers can see which domain you're connecting to."
+            },
+            {
+                label: "Server Hello", icon: "🖥️", from: "Server → Client",
+                color: GREEN, bg: GREEN_LIGHT,
+                desc: "Server chooses the cipher suite and responds with its own random.",
+                detail: "Server Hello message contains:\n  • Chosen TLS version (TLS 1.3)\n  • server_random — 32 random bytes\n  • Chosen cipher suite: TLS_AES_256_GCM_SHA384\n  • Session ID\n\nIn TLS 1.3, Server Hello is immediately followed by:\n  • Certificate (server's public key + identity)\n  • CertificateVerify (proof server holds private key)\n  • Finished (HMAC of all handshake messages)\n\nTLS 1.3 achieves this in 1 round trip (vs 2 in TLS 1.2)."
+            },
+            {
+                label: "Certificate & Validation", icon: "📜", from: "Server → Client (cert chain)",
+                color: AMBER, bg: AMBER_LIGHT,
+                desc: "Client verifies the server's certificate against trusted CAs.",
+                detail: "The server sends its certificate chain:\n  Server Cert → Intermediate CA Cert → Root CA Cert\n\nClient validates:\n  1. Certificate is for the correct domain (CN or SAN matches)\n  2. Certificate is not expired (check Not After date)\n  3. Certificate is signed by a trusted CA\n     (client has a list of ~130 trusted root CAs)\n  4. Certificate is not revoked\n     (CRL — Certificate Revocation List, or OCSP)\n  5. Certificate chain is complete and valid\n\nIf any check fails → browser shows 'Your connection is not private' error."
+            },
+            {
+                label: "Key Exchange (ECDHE)", icon: "🔑", from: "Client ↔ Server",
+                color: PURPLE, bg: PURPLE_LIGHT,
+                desc: "Both sides generate a shared secret without ever sending it over the network.",
+                detail: "ECDHE = Elliptic Curve Diffie-Hellman Ephemeral\n\nMagic of Diffie-Hellman:\n  • Client generates: private_key_C, public_key_C\n  • Server generates: private_key_S, public_key_S\n  • They exchange public keys\n  • Both compute: shared_secret = private_key × other's public_key\n  • The same shared_secret arrives at both ends\n  • The private keys NEVER leave each side\n\n'Ephemeral' = new key pair per session → Forward Secrecy\nEven if server's private key is stolen later, past sessions stay encrypted."
+            },
+            {
+                label: "Session Keys Derived", icon: "🔐", from: "Both sides independently",
+                color: GREEN, bg: GREEN_LIGHT,
+                desc: "Both sides use the shared secret to derive symmetric encryption keys.",
+                detail: "Key Derivation Function (HKDF):\n\nInputs:\n  • shared_secret (from ECDHE)\n  • client_random\n  • server_random\n  • Transcript hash (all handshake messages so far)\n\nOutputs (session keys derived independently by both sides):\n  • client_write_key  — client uses to encrypt, server to decrypt\n  • server_write_key  — server uses to encrypt, client to decrypt\n  • client_write_IV   — initialization vector\n  • server_write_IV\n\nSymmetric encryption is much faster than asymmetric (RSA/ECC).\nTypically AES-256-GCM or ChaCha20-Poly1305."
+            },
+            {
+                label: "Finished", icon: "✅", from: "Both sides",
+                color: GREEN, bg: GREEN_LIGHT,
+                desc: "Both sides send a Finished message — proves the handshake was not tampered with.",
+                detail: "Finished messages:\n  • Each side sends an HMAC over the full handshake transcript\n  • If any message was altered by a MITM attacker, the HMAC fails\n  • This authenticates the entire handshake retrospectively\n\nAfter Finished:\n  • Handshake complete\n  • Application data flows encrypted\n  • Both sides use the session keys derived in step 5\n\nTotal TLS 1.3 setup: 1 round trip (vs 2 RTTs in TLS 1.2)\n0-RTT mode: can send application data with first message (for resumed sessions)"
+            },
+        ];
+
+        return (
+            <div>
+                <Section title="TLS 1.3 Handshake — Step by Step">
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                        {steps.map((s, i) => (
+                            <button key={i} onClick={() => setStep(i)} style={{ padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${step === i ? s.color : BORDER}`, background: step === i ? s.bg : "#fff", color: step === i ? s.color : GRAY, fontSize: 11, fontWeight: step === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>
+                                {i + 1}. {s.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div style={{ background: steps[step].bg, border: `2px solid ${steps[step].color}`, borderRadius: 10, padding: 18, marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                            <span style={{ fontSize: 36 }}>{steps[step].icon}</span>
+                            <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: steps[step].color, fontFamily: "Arial, sans-serif", letterSpacing: 0.5 }}>{steps[step].from}</div>
+                                <div style={{ fontWeight: 700, fontSize: 15, color: steps[step].color, fontFamily: "Georgia, serif" }}>Step {step + 1}: {steps[step].label}</div>
+                            </div>
+                        </div>
+                        <p style={{ margin: "0 0 12px", fontSize: 13, color: GRAY, fontFamily: "Arial, sans-serif" }}>{steps[step].desc}</p>
+                        <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 6, padding: 14, fontSize: 12, fontFamily: "monospace", color: "#333", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{steps[step].detail}</div>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${BORDER}`, background: "#fff", opacity: step === 0 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12 }}>← Previous</button>
+                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", alignSelf: "center" }}>{step + 1} / {steps.length}</span>
+                        <button onClick={() => setStep(Math.min(steps.length - 1, step + 1))} disabled={step === steps.length - 1} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${GREEN}`, background: GREEN_LIGHT, color: GREEN, opacity: step === steps.length - 1 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700 }}>Next →</button>
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function SslCertificates() {
+        return (
+            <div>
+                <Section title="What an SSL/TLS Certificate Contains">
+                    <div style={{ border: `2px solid ${GREEN}`, borderRadius: 10, overflow: "hidden", marginBottom: 20 }}>
+                        <div style={{ background: GREEN, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 16 }}>🔒</span>
+                            <span style={{ fontWeight: 700, fontSize: 13, color: "#fff", fontFamily: "Arial, sans-serif" }}>X.509 Certificate — www.example.com</span>
+                        </div>
+                        {[
+                            { field: "Subject", value: "CN=www.example.com\nO=Example Corp\nC=US", desc: "Who this certificate is for" },
+                            { field: "Subject Alt Names (SAN)", value: "DNS: www.example.com\nDNS: example.com\nDNS: *.example.com", desc: "All domains this cert is valid for (modern standard)" },
+                            { field: "Issuer", value: "CN=DigiCert TLS RSA SHA256 2020 CA1\nO=DigiCert Inc\nC=US", desc: "Which CA signed this certificate" },
+                            { field: "Valid From", value: "Jan 1, 2024 00:00:00 UTC", desc: "When the certificate becomes valid" },
+                            { field: "Valid To", value: "Jan 1, 2025 23:59:59 UTC", desc: "When the certificate expires" },
+                            { field: "Public Key", value: "RSA 2048-bit  (or EC 256-bit)\n30 82 01 0A 02 82 01 01 00 B3...", desc: "The server's public key (asymmetric encryption)" },
+                            { field: "Signature Algorithm", value: "sha256WithRSAEncryption", desc: "How the CA signed this certificate" },
+                            { field: "CA Signature", value: "3E 45 A1 C2 ... (2048 bits)\nCryptographic proof from the CA", desc: "Proves the CA vouches for this certificate" },
+                            { field: "Serial Number", value: "0A:BC:12:34:56:78:90:AB", desc: "Unique ID within the CA's database (for revocation)" },
+                        ].map((row, i) => (
+                            <div key={i} style={{ display: "flex", borderBottom: i < 8 ? `1px solid ${BORDER}` : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                                <div style={{ width: 200, padding: "10px 14px", borderRight: `1px solid ${BORDER}`, flexShrink: 0 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 12, color: GREEN, fontFamily: "Arial, sans-serif" }}>{row.field}</div>
+                                    <div style={{ fontSize: 10, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 2 }}>{row.desc}</div>
+                                </div>
+                                <div style={{ padding: "10px 14px", fontFamily: "monospace", fontSize: 11, color: "#333", lineHeight: 1.6, whiteSpace: "pre" }}>{row.value}</div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="Certificate Types" color={BLUE}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {[
+                            { type: "DV — Domain Validated", badge: "DV", color: GREEN, bg: GREEN_LIGHT, desc: "Cheapest and most common. CA only verifies you control the domain (via DNS or file challenge). No identity info about the organization.", uses: "Personal sites, blogs, APIs, dev tools", example: "Let's Encrypt (free), most basic paid certs" },
+                            { type: "OV — Organization Validated", badge: "OV", color: BLUE, bg: BLUE_LIGHT, desc: "CA verifies the domain AND the organization exists legally. Company name appears in the certificate subject.", uses: "Business websites, e-commerce, public APIs", example: "DigiCert OV, Sectigo OV" },
+                            { type: "EV — Extended Validation", badge: "EV", color: AMBER, bg: AMBER_LIGHT, desc: "Strictest vetting. CA verifies legal existence, physical address, phone, etc. Was shown with green address bar in older browsers.", uses: "Banks, financial institutions (decreasing use)", example: "Browsers now treat EV same as OV visually" },
+                            { type: "Wildcard Certificate", badge: "*.domain", color: PURPLE, bg: PURPLE_LIGHT, desc: "Covers a domain and ALL of its direct subdomains.", uses: "*.example.com covers: api.example.com, www.example.com, app.example.com — but NOT sub.api.example.com", example: "Very common for organizations with many subdomains" },
+                            { type: "Multi-SAN Certificate", badge: "SAN", color: AMBER, bg: AMBER_LIGHT, desc: "Single certificate covering multiple specific domains via Subject Alternative Names.", uses: "example.com, example.net, example.org — all in one cert", example: "Cost-effective when you have a few distinct domains" },
+                        ].map(row => (
+                            <div key={row.type} style={{ background: row.bg, border: `1.5px solid ${row.color}`, borderRadius: 8, padding: 14 }}>
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 6 }}>
+                                    <span style={{ background: row.color, color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, fontFamily: "monospace" }}>{row.badge}</span>
+                                    <span style={{ fontWeight: 700, fontSize: 13, color: row.color, fontFamily: "Georgia, serif" }}>{row.type}</span>
+                                </div>
+                                <p style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", marginBottom: 6, lineHeight: 1.5 }}>{row.desc}</p>
+                                <div style={{ fontSize: 11, color: row.color, fontFamily: "Arial, sans-serif" }}><strong>Use:</strong> {row.uses}</div>
+                                <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 2 }}><strong>Examples:</strong> {row.example}</div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function HttpVsHttps() {
+        return (
+            <div>
+                <Section title="HTTP vs HTTPS — Full Comparison">
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                        <div style={{ background: RED_LIGHT, border: `2px solid ${RED}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ fontWeight: 700, fontSize: 15, color: RED, fontFamily: "Georgia, serif", marginBottom: 4 }}>HTTP</div>
+                            <div style={{ fontSize: 11, color: RED, marginBottom: 12, fontFamily: "Arial, sans-serif" }}>HyperText Transfer Protocol — Unencrypted</div>
+                            {[
+                                "Port 80 by default",
+                                "All data sent as plaintext",
+                                "Anyone on the network can read it",
+                                "No server identity verification",
+                                "Data can be modified in transit (MITM)",
+                                "Cookies visible to network observers",
+                                "Passwords visible in plaintext",
+                                "Browser shows 'Not Secure' warning",
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                    <span style={{ color: RED, fontWeight: 700, fontSize: 11 }}>✗</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ background: GREEN_LIGHT, border: `2px solid ${GREEN}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ fontWeight: 700, fontSize: 15, color: GREEN, fontFamily: "Georgia, serif", marginBottom: 4 }}>HTTPS</div>
+                            <div style={{ fontSize: 11, color: GREEN, marginBottom: 12, fontFamily: "Arial, sans-serif" }}>HTTP over TLS — Encrypted</div>
+                            {[
+                                "Port 443 by default",
+                                "All data encrypted (AES-256-GCM or ChaCha20)",
+                                "Network observers see only ciphertext",
+                                "Server identity verified via certificate",
+                                "Data integrity protected (AEAD encryption)",
+                                "Cookies encrypted in transit",
+                                "Passwords encrypted in transit",
+                                "Browser shows padlock icon",
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                    <span style={{ color: GREEN, fontWeight: 700, fontSize: 11 }}>✓</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Section title="Three Security Properties of HTTPS" color={BLUE}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        {[
+                            { icon: "🔒", name: "Confidentiality", color: BLUE, bg: BLUE_LIGHT, desc: "Data is encrypted. Only the client and server can read it. An ISP, Wi-Fi admin, or attacker on the network sees only encrypted bytes — nothing meaningful." },
+                            { icon: "🛡️", name: "Integrity", color: GREEN, bg: GREEN_LIGHT, desc: "Data cannot be modified in transit. AEAD (Authenticated Encryption with Associated Data) means any tampering is detected and the connection is rejected. Prevents content injection attacks." },
+                            { icon: "🪪", name: "Authentication", color: AMBER, bg: AMBER_LIGHT, desc: "The server's identity is verified via its certificate. You know you're talking to the real server, not an impersonator. Prevents man-in-the-middle attacks." },
+                        ].map(row => (
+                            <div key={row.name} style={{ background: row.bg, border: `1.5px solid ${row.color}`, borderRadius: 8, padding: 16, display: "flex", gap: 14 }}>
+                                <span style={{ fontSize: 28, flexShrink: 0 }}>{row.icon}</span>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: 14, color: row.color, fontFamily: "Georgia, serif", marginBottom: 6 }}>{row.name}</div>
+                                    <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.6 }}>{row.desc}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="Why HTTPS for Everything?" color={AMBER}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {[
+                            { title: "SEO", icon: "📈", desc: "Google gives ranking boost to HTTPS sites. HTTP sites are penalized." },
+                            { title: "Browser Features", icon: "🌐", desc: "Geolocation, camera, microphone, Service Workers, PWAs — only work on HTTPS." },
+                            { title: "Required for HTTP/2", icon: "⚡", desc: "All browsers only support HTTP/2 over HTTPS. HTTP/2 gives huge speed boost." },
+                            { title: "HSTS", icon: "🔐", desc: "Strict-Transport-Security header forces HTTPS permanently. Preloaded in browsers." },
+                            { title: "Cookie Security", icon: "🍪", desc: "Secure flag on cookies requires HTTPS. Without it, cookies sent on insecure connections." },
+                            { title: "Free with Let's Encrypt", icon: "🆓", desc: "Let's Encrypt provides free, automated, 90-day certificates. No excuse not to use HTTPS." },
+                        ].map(row => (
+                            <div key={row.title} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 8, padding: 12 }}>
+                                <div style={{ fontSize: 20, marginBottom: 4 }}>{row.icon}</div>
+                                <div style={{ fontWeight: 700, fontSize: 12, color: GREEN, fontFamily: "Arial, sans-serif", marginBottom: 4 }}>{row.title}</div>
+                                <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif" }}>{row.desc}</div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function WhatGetsEncrypted() {
+        return (
+            <div>
+                <Section title="What HTTPS Encrypts">
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                        <div style={{ background: GREEN_LIGHT, border: `2px solid ${GREEN}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: GREEN, marginBottom: 12, fontFamily: "Arial, sans-serif" }}>🔒 ENCRYPTED (hidden from observers)</div>
+                            {[
+                                { item: "HTTP method", ex: "GET, POST, DELETE — hidden" },
+                                { item: "URL path & query", ex: "/api/users?token=secret — hidden" },
+                                { item: "Request headers", ex: "Authorization, Cookie — hidden" },
+                                { item: "Request body", ex: "Passwords, form data — hidden" },
+                                { item: "Response headers", ex: "Set-Cookie, Content-Type — hidden" },
+                                { item: "Response body", ex: "JSON, HTML, files — hidden" },
+                                { item: "Status code", ex: "200, 404 — hidden" },
+                            ].map((row, i) => (
+                                <div key={i} style={{ borderBottom: i < 6 ? `1px solid ${GREEN}20` : "none", paddingBottom: 6, marginBottom: 6 }}>
+                                    <div style={{ fontWeight: 600, fontSize: 12, color: GREEN, fontFamily: "Arial, sans-serif" }}>{row.item}</div>
+                                    <div style={{ fontSize: 11, color: GRAY, fontFamily: "monospace" }}>{row.ex}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ background: RED_LIGHT, border: `2px solid ${RED}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ fontWeight: 700, fontSize: 13, color: RED, marginBottom: 12, fontFamily: "Arial, sans-serif" }}>👁️ NOT ENCRYPTED (visible to network)</div>
+                            {[
+                                { item: "Destination IP address", ex: "93.184.216.34 — visible", why: "Routers need it to deliver packets" },
+                                { item: "Destination port", ex: ":443 — visible", why: "Needed for routing" },
+                                { item: "Server Name Indication (SNI)", ex: "example.com — visible in ClientHello", why: "Server needs to pick the right cert" },
+                                { item: "Packet sizes", ex: "approximate data volume — visible", why: "Encrypted but size reveals some info" },
+                                { item: "Timing patterns", ex: "when requests happen — visible", why: "Cannot be hidden by encryption" },
+                                { item: "Connection metadata", ex: "how long connected — visible", why: "Network-level info" },
+                                { item: "DNS queries (plain DNS)", ex: "example.com lookup — visible", why: "Use DoH/DoT to encrypt DNS too" },
+                            ].map((row, i) => (
+                                <div key={i} style={{ borderBottom: i < 6 ? `1px solid ${RED}20` : "none", paddingBottom: 6, marginBottom: 6 }}>
+                                    <div style={{ fontWeight: 600, fontSize: 12, color: RED, fontFamily: "Arial, sans-serif" }}>{row.item}</div>
+                                    <div style={{ fontSize: 11, color: GRAY, fontFamily: "monospace" }}>{row.ex}</div>
+                                    <div style={{ fontSize: 10, color: "#888", fontFamily: "Arial, sans-serif" }}>{row.why}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Section title="Encrypted DNS: DoH and DoT" color={BLUE}>
+                    <div style={{ background: BLUE_LIGHT, border: `1.5px solid ${BLUE}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+                        <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.7, marginBottom: 12 }}>
+                            Regular DNS queries are sent in plaintext — your ISP and network observers can see every domain you look up. Two standards solve this:
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            {[
+                                { name: "DoH — DNS over HTTPS", port: "Port 443", desc: "DNS queries sent as HTTPS requests. Indistinguishable from normal web traffic. Used by Firefox, Chrome, and Cloudflare.", color: BLUE },
+                                { name: "DoT — DNS over TLS", port: "Port 853", desc: "DNS queries encrypted with TLS. Easier for admins to filter (uses dedicated port). Used by Android and some ISPs.", color: GREEN },
+                            ].map(row => (
+                                <div key={row.name} style={{ background: "rgba(255,255,255,0.7)", borderRadius: 8, padding: 12 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 12, color: row.color, fontFamily: "Arial, sans-serif" }}>{row.name}</div>
+                                    <div style={{ fontSize: 11, color: row.color, fontFamily: "monospace", margin: "4px 0" }}>{row.port}</div>
+                                    <div style={{ fontSize: 11, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.5 }}>{row.desc}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Section title="MITM Attack: How HTTP Gets Compromised" color={RED}>
+                    <div style={{ background: RED_LIGHT, border: `1.5px solid ${RED}`, borderRadius: 10, padding: 16 }}>
+                        <div style={{ fontFamily: "monospace", fontSize: 12, lineHeight: 2.0, color: "#333" }}>
+                            <div style={{ color: BLUE }}>User</div>
+                            <div>&nbsp;&nbsp;↓ GET /login HTTP/1.1</div>
+                            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cookie: session=abc</div>
+                            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(all visible to attacker)</div>
+                            <div style={{ color: RED }}>&nbsp;&nbsp;↓ Attacker on Wi-Fi reads/modifies everything</div>
+                            <div style={{ color: GREEN }}>&nbsp;&nbsp;↓ Fake server responds with modified page</div>
+                        </div>
+                        <div style={{ marginTop: 12, fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.6 }}>
+                            With HTTPS, the attacker sees only encrypted bytes. Any attempt to modify the data makes the AEAD integrity check fail, and the browser drops the connection. The attacker cannot impersonate the server without a valid certificate signed by a trusted CA.
+                        </div>
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    const views = [HttpVersions, TlsHandshake, SslCertificates, HttpVsHttps, WhatGetsEncrypted];
+
+    function App() {
+        const [tab, setTab] = useState(0);
+        const View = views[tab];
+        return (
+            <div style={{ maxWidth: 820, margin: "0 auto", padding: "30px 16px" }}>
+                <div style={{ borderLeft: `4px solid ${GREEN}`, paddingLeft: 14, marginBottom: 24 }}>
+                    <p style={{ margin: 0, fontSize: 11, color: GREEN, fontWeight: 700, letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>QA INTERNSHIP — WEB FUNDAMENTALS</p>
+                    <h1 style={{ margin: "4px 0 0", fontSize: 26, fontWeight: 700, color: "#1a1a1a", fontFamily: "Georgia, serif" }}>HTTP & HTTPS</h1>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24, borderBottom: `2px solid ${BORDER}`, paddingBottom: 12 }}>
+                    {tabs.map((t, i) => (
+                        <button key={t} onClick={() => setTab(i)} style={{ padding: "7px 14px", borderRadius: 6, border: `1.5px solid ${tab === i ? GREEN : BORDER}`, background: tab === i ? GREEN : "#fff", color: tab === i ? "#fff" : GRAY, fontSize: 12, fontWeight: tab === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>{t}</button>
+                    ))}
+                </div>
+                <View />
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

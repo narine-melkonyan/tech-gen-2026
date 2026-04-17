@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f2744,#0a1628);padding:24px 32px 18px;border-bottom:2px solid #7c3aed}
+.header h1{font-size:1.5rem;color:#a78bfa}
+.header p{color:#64748b;font-size:0.85rem;margin-top:4px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;padding:14px 32px;background:#0d1117;border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:100}
+.nav-btn{padding:6px 13px;border-radius:18px;border:1px solid #334155;background:#1e293b;color:#94a3b8;cursor:pointer;font-size:0.78rem;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.content{padding:28px 32px;max-width:920px}
+.section{display:none}.section.active{display:block}
+
+h2{font-size:1.3rem;color:#a78bfa;margin-bottom:4px}
+h3{font-size:1.05rem;color:#fbbf24;margin:22px 0 8px}
+h4{font-size:0.92rem;color:#34d399;margin:14px 0 6px}
+.subtitle{color:#475569;font-size:0.82rem;margin-bottom:18px;border-bottom:1px solid #1e293b;padding-bottom:10px}
+p{color:#cbd5e1;line-height:1.75;font-size:0.9rem;margin-bottom:12px}
+ul,ol{color:#cbd5e1;font-size:0.9rem;line-height:1.85;padding-left:22px;margin-bottom:12px}
+li{margin-bottom:4px}
+code{background:#1e293b;color:#fbbf24;padding:2px 7px;border-radius:4px;font-size:0.83rem;font-family:'Courier New',monospace}
+
+.tip{background:#1a0f3d;border-left:3px solid #7c3aed;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:0.87rem;color:#c4b5fd;line-height:1.65}
+.warn{background:#2d1b00;border-left:3px solid #f59e0b;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:0.87rem;color:#fbbf24;line-height:1.65}
+.success{background:#0a1f0f;border-left:3px solid #22c55e;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:0.87rem;color:#86efac;line-height:1.65}
+.danger{background:#1f0f0f;border-left:3px solid #ef4444;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:0.87rem;color:#fca5a5;line-height:1.65}
+
+.diagram{background:#0d1117;border:1px solid #1e3a5f;border-radius:10px;padding:18px;margin:14px 0}
+.code-block{background:#050810;border:1px solid #1e293b;border-radius:8px;padding:14px 18px;font-family:'Courier New',monospace;font-size:0.82rem;color:#a5f3fc;line-height:1.9;margin:10px 0;overflow-x:auto}
+.code-label{color:#64748b;font-size:0.73rem;margin-bottom:6px;font-family:sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
+.card{background:#0d1117;border:1px solid #1e293b;border-radius:10px;padding:14px 16px}
+.card h4{margin-top:0}
+
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse}
+th{background:#1a0f3d;color:#a78bfa;padding:9px 12px;text-align:left;font-size:0.82rem}
+td{padding:9px 12px;font-size:0.83rem;border-bottom:1px solid #1e293b;vertical-align:top;color:#cbd5e1}
+tr:hover td{background:#0d1117}
+
+.test-case{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;margin:10px 0;overflow:hidden}
+.tc-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0f1829;cursor:pointer;user-select:none}
+.tc-header:hover{background:#131f35}
+.tc-title{font-weight:600;font-size:0.88rem;color:#93c5fd;flex:1}
+.tc-tag{font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:700}
+.tag-pass{background:#14532d;color:#86efac}
+.tag-fail{background:#7f1d1d;color:#fca5a5}
+.tag-check{background:#1e3a5f;color:#93c5fd}
+.tc-body{padding:12px 14px;border-top:1px solid #1e293b;font-size:0.85rem;color:#94a3b8;line-height:1.7;display:none}
+.tc-body.open{display:block}
+.tc-body ol,.tc-body ul{font-size:0.84rem}
+.tc-arrow{color:#475569;font-size:0.8rem;transition:transform 0.2s}
+
+.checklist{list-style:none;padding:0}
+.checklist li{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:6px;margin:4px 0;font-size:0.87rem;cursor:pointer;background:#0d1117;border:1px solid #1e293b;transition:all 0.15s}
+.checklist li:hover{border-color:#7c3aed}
+.checklist li.checked{background:#0f1f1a;border-color:#22c55e;color:#86efac}
+.checklist li.checked .chk{background:#22c55e;color:#fff;border-color:#22c55e}
+.chk{width:18px;height:18px;border-radius:4px;border:2px solid #334155;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;margin-top:1px;transition:all 0.15s}
+
+.browser-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.browser-card{background:#0d1117;border:1px solid #1e293b;border-radius:10px;padding:14px;text-align:center}
+.browser-icon{font-size:2rem;margin-bottom:8px}
+.browser-name{font-weight:700;font-size:0.88rem;color:#e2e8f0;margin-bottom:4px}
+.browser-issues{font-size:0.78rem;color:#64748b;line-height:1.5}
+
+.device-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.device-card{border-radius:10px;padding:16px}
+
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.box{padding:9px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-align:center;min-width:80px}
+.box.purple{background:#4c1d95;color:#c4b5fd;border:1px solid #7c3aed}
+.box.green{background:#14532d;color:#86efac;border:1px solid #22c55e}
+.box.blue{background:#1d4ed8;color:#bfdbfe;border:1px solid #3b82f6}
+.box.orange{background:#7c2d12;color:#fdba74;border:1px solid #f97316}
+.box.gray{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.arrow{color:#475569;font-size:1.1rem}
+
+.alert-demo{background:#0d1117;border:2px solid #334155;border-radius:10px;padding:20px;margin:14px 0;text-align:center}
+.btn-demo{padding:8px 18px;border-radius:6px;border:none;cursor:pointer;font-size:0.85rem;font-weight:600;margin:4px}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-green{background:#16a34a;color:#fff}
+.btn-orange{background:#d97706;color:#fff}
+.alert-output{margin-top:14px;padding:10px 14px;border-radius:6px;background:#1e293b;font-family:monospace;font-size:0.82rem;color:#a5f3fc;min-height:36px;text-align:left}
+
+.progress-bar{background:#1e293b;border-radius:20px;height:8px;overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#7c3aed,#06b6d4);transition:width 0.5s}
+
+@media(max-width:640px){.content{padding:16px 14px}.nav{padding:10px 14px}.two-col,.three-col,.browser-grid,.device-compare{grid-template-columns:1fr}.header{padding:18px 14px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🧪 Web Application Testing — Workshop</h1>
+  <p>Deep-dive guide with test cases, checklists, code examples, and live demos</p>
+</div>
+<div class="nav">
+  <button class="nav-btn active" onclick="show('func')">1. Functional Testing</button>
+  <button class="nav-btn" onclick="show('browser')">2. Cross-Browser</button>
+  <button class="nav-btn" onclick="show('device')">3. Cross-Device</button>
+  <button class="nav-btn" onclick="show('uiux')">4. UI/UX Testing</button>
+  <button class="nav-btn" onclick="show('responsive')">5. Responsive Design</button>
+  <button class="nav-btn" onclick="show('alerts')">6. Alerts, Pop-ups & Frames</button>
+</div>
+<div class="content">
+
+<!-- ========== FUNCTIONAL TESTING ========== -->
+<div class="section active" id="func">
+  <h2>✅ Functional Testing for Web Applications</h2>
+  <p class="subtitle">Testing that every feature works exactly as the requirements specify</p>
+
+  <h3>What is Functional Testing?</h3>
+  <p><strong>Functional testing</strong> verifies that the application behaves correctly from the user's point of view. It doesn't care <em>how</em> the code works internally — only that inputs produce the expected outputs. It's based on <strong>what the software is supposed to do</strong>.</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="box blue">Requirement<br><small>e.g. "Login form"</small></div>
+      <div class="arrow">→</div>
+      <div class="box purple">Test Case<br><small>Input + Expected</small></div>
+      <div class="arrow">→</div>
+      <div class="box green">Execute<br><small>Run the test</small></div>
+      <div class="arrow">→</div>
+      <div class="box orange">Compare<br><small>Actual vs Expected</small></div>
+    </div>
+  </div>
+
+  <h3>🔘 Testing Forms</h3>
+  <p>Forms are the most critical UI element for functional testing. Every field, validation rule, and submission path must be tested.</p>
+
+  <h4>What to test in every form:</h4>
+  <ul>
+    <li><strong>Required fields</strong> — Submit without filling required fields → error messages appear</li>
+    <li><strong>Valid input</strong> — Correct data → form submits successfully</li>
+    <li><strong>Invalid input</strong> — Wrong format (e.g., email without @) → validation error shown</li>
+    <li><strong>Boundary values</strong> — Min/max lengths, min/max numbers (e.g., age: 0, -1, 150)</li>
+    <li><strong>Special characters</strong> — <code>&lt;script&gt;</code>, <code>'OR 1=1</code>, emojis — must not break</li>
+    <li><strong>Whitespace</strong> — Spaces-only input should be treated as empty</li>
+    <li><strong>Duplicate submission</strong> — Double-click submit → should not create two records</li>
+    <li><strong>Tab order</strong> — Tab key moves logically through fields</li>
+    <li><strong>Autofill</strong> — Browser autofill should not break form state</li>
+  </ul>
+
+  <div class="code-label">Test Case Table — Login Form</div>
+  <div class="table-wrap"><table>
+    <tr><th>#</th><th>Test Case</th><th>Input</th><th>Expected Result</th><th>Status</th></tr>
+    <tr><td>TC-01</td><td>Valid login</td><td>user@test.com / Pass123!</td><td>Redirect to dashboard</td><td style="color:#86efac">✅ Pass</td></tr>
+    <tr><td>TC-02</td><td>Wrong password</td><td>user@test.com / wrong</td><td>"Invalid credentials" error</td><td style="color:#86efac">✅ Pass</td></tr>
+    <tr><td>TC-03</td><td>Empty email</td><td>(empty) / Pass123!</td><td>"Email is required" error</td><td style="color:#86efac">✅ Pass</td></tr>
+    <tr><td>TC-04</td><td>Invalid email format</td><td>notanemail / Pass123!</td><td>"Invalid email format" error</td><td style="color:#fca5a5">❌ Fail</td></tr>
+    <tr><td>TC-05</td><td>SQL injection attempt</td><td>' OR '1'='1 / anything</td><td>Error message, no DB access</td><td style="color:#86efac">✅ Pass</td></tr>
+    <tr><td>TC-06</td><td>XSS attempt</td><td>&lt;script&gt;alert(1)&lt;/script&gt;</td><td>Input sanitized, no alert</td><td style="color:#86efac">✅ Pass</td></tr>
+    <tr><td>TC-07</td><td>Very long input</td><td>500-char password</td><td>Truncated or rejected gracefully</td><td style="color:#fbbf24">⚠️ Check</td></tr>
+  </table></div>
+
+  <h3>🔗 Testing Links & Navigation</h3>
+  <ul>
+    <li><strong>Internal links</strong> — Each link navigates to the correct page</li>
+    <li><strong>External links</strong> — Open in new tab (<code>target="_blank"</code>) and reach correct URL</li>
+    <li><strong>Broken links</strong> — No 404 errors on any navigation link</li>
+    <li><strong>Breadcrumbs</strong> — Correctly reflect current page hierarchy</li>
+    <li><strong>Back button</strong> — Browser back navigates to previous page correctly</li>
+    <li><strong>Deep links</strong> — Pasting a URL directly loads the correct page</li>
+    <li><strong>Anchor links</strong> — <code>#section</code> links scroll to correct position</li>
+    <li><strong>404 page</strong> — Broken URLs show a helpful error page, not a crash</li>
+  </ul>
+
+  <h3>🖱️ Testing Buttons</h3>
+  <ul>
+    <li><strong>Click action</strong> — Correct action is triggered</li>
+    <li><strong>Disabled state</strong> — Disabled buttons cannot be clicked</li>
+    <li><strong>Loading state</strong> — Button shows spinner/disables during async operations</li>
+    <li><strong>Double-click protection</strong> — Submitting twice doesn't duplicate the operation</li>
+    <li><strong>Keyboard access</strong> — Button can be triggered with Enter/Space key</li>
+    <li><strong>Visual feedback</strong> — Hover, active, focus states are visually distinct</li>
+    <li><strong>Correct label</strong> — Button text accurately describes its action</li>
+  </ul>
+
+  <h3>Interactive: Form Test Checklist</h3>
+  <p style="font-size:0.84rem;color:#64748b;margin-bottom:8px;">Click each item to mark it as tested ✓</p>
+  <ul class="checklist" id="form-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Required field validation shows error messages</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Valid input submits successfully and shows confirmation</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Invalid email format is rejected with clear error</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Password field masks characters</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Form resets properly on Cancel/Reset button</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Tab key moves focus in logical order through fields</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>XSS input is sanitized and does not execute</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>SQL injection input is safely handled</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Double-click on submit only sends one request</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Whitespace-only fields treated as empty</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Max-length limits enforced on text inputs</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Error messages are clear, specific, and helpful</li>
+  </ul>
+  <div id="form-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 12 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="form-prog-fill" style="width:0%"></div></div>
+
+  <h3>Expandable Test Cases</h3>
+  <div class="test-case">
+    <div class="tc-header" onclick="toggleTC(this)"><span class="tc-title">TC: Navigation — All menu links work correctly</span><span class="tc-tag tag-check">TEST</span><span class="tc-arrow">▼</span></div>
+    <div class="tc-body">
+      <strong>Precondition:</strong> User is on the homepage<br><br>
+      <strong>Steps:</strong>
+      <ol style="margin-top:6px">
+        <li>Hover over each main nav item</li>
+        <li>Click each link</li>
+        <li>Verify the correct page loads (check URL + page title)</li>
+        <li>Click browser Back</li>
+        <li>Repeat for all nav items including dropdowns</li>
+      </ol>
+      <br><strong>Expected:</strong> Every link navigates to the correct page with no 404 errors<br>
+      <strong>Also check:</strong> Active state highlights the current page in nav
+    </div>
+  </div>
+  <div class="test-case">
+    <div class="tc-header" onclick="toggleTC(this)"><span class="tc-title">TC: Button — Submit triggers correct action only once</span><span class="tc-tag tag-check">TEST</span><span class="tc-arrow">▼</span></div>
+    <div class="tc-body">
+      <strong>Precondition:</strong> User has filled out a valid form<br><br>
+      <strong>Steps:</strong>
+      <ol style="margin-top:6px">
+        <li>Click the Submit button rapidly twice</li>
+        <li>Observe button state during processing</li>
+        <li>Check network tab for number of requests sent</li>
+        <li>Check database/response for number of records created</li>
+      </ol>
+      <br><strong>Expected:</strong> Only ONE request is sent. Button is disabled after first click. Only one record created.
+    </div>
+  </div>
+
+  <div class="tip">💡 <strong>Positive vs Negative Testing:</strong> Always test BOTH valid paths (happy path) and invalid paths (error paths). Most bugs are found in error handling, not in the happy path.</div>
+</div>
+
+<!-- ========== CROSS-BROWSER ========== -->
+<div class="section" id="browser">
+  <h2>🌐 Cross-Browser Testing</h2>
+  <p class="subtitle">Ensuring your app works correctly across all major browsers</p>
+
+  <h3>Why Cross-Browser Testing Matters</h3>
+  <p>Different browsers use different <strong>rendering engines</strong>. The same HTML/CSS/JS can behave differently across them. A feature that works perfectly in Chrome might be broken, unstyled, or missing in Safari or Firefox.</p>
+
+  <div class="table-wrap"><table>
+    <tr><th>Browser</th><th>Engine</th><th>Market Share (2025)</th><th>Key Concerns</th></tr>
+    <tr><td>🟡 Chrome</td><td>Blink + V8</td><td>~65%</td><td>Baseline — most features work, but don't assume others match</td></tr>
+    <tr><td>🦊 Firefox</td><td>Gecko + SpiderMonkey</td><td>~4%</td><td>CSS Grid differences, font rendering, some web APIs</td></tr>
+    <tr><td>🔷 Edge</td><td>Blink + V8 (Chromium)</td><td>~13%</td><td>Very similar to Chrome; IE compatibility mode is unique</td></tr>
+    <tr><td>🍎 Safari</td><td>WebKit + JavaScriptCore</td><td>~19%</td><td>Most issues here — delayed feature support, iOS quirks</td></tr>
+  </table></div>
+
+  <div class="browser-grid">
+    <div class="browser-card"><div class="browser-icon">🟡</div><div class="browser-name">Chrome</div><div class="browser-issues">DevTools gold standard. Most CSS/JS works. Test others against Chrome baseline.</div></div>
+    <div class="browser-card"><div class="browser-icon">🦊</div><div class="browser-name">Firefox</div><div class="browser-issues">Stricter CSS parsing. Different scrollbar styling. Some Date API differences.</div></div>
+    <div class="browser-card"><div class="browser-icon">🔷</div><div class="browser-name">Edge</div><div class="browser-issues">Chromium-based so very similar to Chrome. Has IE Mode for legacy sites.</div></div>
+    <div class="browser-card"><div class="browser-icon">🍎</div><div class="browser-name">Safari</div><div class="browser-issues">Most cross-browser bugs found here. No custom scrollbars. Flexbox quirks. Input styling.</div></div>
+  </div>
+
+  <h3>Common Cross-Browser Issues</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>CSS Issues</h4>
+      <ul style="font-size:0.84rem;">
+        <li>Flexbox/Grid layout differences</li>
+        <li>CSS custom properties (variables) not supported in older browsers</li>
+        <li>Scrollbar styling (webkit-only)</li>
+        <li>Font rendering differences</li>
+        <li>Input/select element styling</li>
+        <li><code>gap</code> in flexbox (Safari 14 and older)</li>
+        <li>CSS <code>:focus-visible</code> support varies</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>JavaScript Issues</h4>
+      <ul style="font-size:0.84rem;">
+        <li>ES6+ features not in older Safari</li>
+        <li>Date parsing format differences</li>
+        <li><code>fetch()</code> AbortController quirks</li>
+        <li>Web APIs (Bluetooth, NFC) not in Safari</li>
+        <li>Event handling differences (<code>e.which</code> vs <code>e.key</code>)</li>
+        <li>IndexedDB behavior varies</li>
+        <li>Clipboard API requires HTTPS + user gesture</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Cross-Browser Test Checklist</h3>
+  <ul class="checklist" id="browser-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page layout is correct in Chrome</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page layout is correct in Firefox</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page layout is correct in Edge</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page layout is correct in Safari</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>All fonts render correctly in all browsers</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Forms submit correctly in all browsers</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>JavaScript functionality works in all browsers</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Animations/transitions work in all browsers</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Images and icons display correctly everywhere</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Console shows no errors in any browser</li>
+  </ul>
+  <div id="browser-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 10 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="browser-prog-fill" style="width:0%"></div></div>
+
+  <h3>Tools for Cross-Browser Testing</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Type</th><th>Notes</th></tr>
+    <tr><td><strong>BrowserStack</strong></td><td>Cloud / Paid</td><td>Real devices and browsers in the cloud. Most comprehensive.</td></tr>
+    <tr><td><strong>Sauce Labs</strong></td><td>Cloud / Paid</td><td>Great for automated cross-browser CI/CD pipelines.</td></tr>
+    <tr><td><strong>LambdaTest</strong></td><td>Cloud / Freemium</td><td>100+ browser/OS combinations. Has free tier.</td></tr>
+    <tr><td><strong>Playwright</strong></td><td>Automation / Free</td><td>Test Chrome, Firefox, WebKit (Safari) with one codebase.</td></tr>
+    <tr><td><strong>Can I Use</strong></td><td>Reference</td><td>caniuse.com — check browser support for any CSS/JS feature.</td></tr>
+    <tr><td><strong>Local browsers</strong></td><td>Manual / Free</td><td>Install all 4 major browsers and test manually.</td></tr>
+  </table></div>
+
+  <h3>Using Playwright for Cross-Browser Automation</h3>
+  <div class="code-block">
+<span style="color:#7c3aed">// playwright.config.js</span><br>
+module.exports = {<br>
+&nbsp;&nbsp;projects: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ name: <span style="color:#86efac">'chromium'</span>, use: { ...devices[<span style="color:#86efac">'Desktop Chrome'</span>] } },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ name: <span style="color:#86efac">'firefox'</span>,  use: { ...devices[<span style="color:#86efac">'Desktop Firefox'</span>] } },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ name: <span style="color:#86efac">'webkit'</span>,   use: { ...devices[<span style="color:#86efac">'Desktop Safari'</span>] } },<br>
+&nbsp;&nbsp;]<br>
+};<br><br>
+<span style="color:#7c3aed">// test.spec.js — runs on ALL 3 browsers automatically</span><br>
+test(<span style="color:#86efac">'login form works'</span>, async ({ page }) => {<br>
+&nbsp;&nbsp;await page.goto(<span style="color:#86efac">'https://myapp.com/login'</span>);<br>
+&nbsp;&nbsp;await page.fill(<span style="color:#86efac">'#email'</span>, <span style="color:#86efac">'user@test.com'</span>);<br>
+&nbsp;&nbsp;await page.fill(<span style="color:#86efac">'#password'</span>, <span style="color:#86efac">'Pass123!'</span>);<br>
+&nbsp;&nbsp;await page.click(<span style="color:#86efac">'button[type=submit]'</span>);<br>
+&nbsp;&nbsp;await expect(page).toHaveURL(<span style="color:#86efac">/dashboard/</span>);<br>
+});
+  </div>
+
+  <div class="warn">⚠️ <strong>Safari is the new IE.</strong> Safari on iOS (which all iOS browsers must use!) is the most common source of cross-browser bugs in 2025. Always test on real or simulated Safari/iOS.</div>
+</div>
+
+<!-- ========== CROSS-DEVICE ========== -->
+<div class="section" id="device">
+  <h2>📱 Cross-Device Testing</h2>
+  <p class="subtitle">Testing across desktops, tablets, and mobile phones</p>
+
+  <h3>Why Devices Differ</h3>
+  <p>It's not just about screen size. Devices differ in <strong>input method</strong> (mouse vs touch), <strong>screen pixel density</strong> (retina vs standard), <strong>performance</strong> (CPU/RAM), <strong>browser</strong> (mobile Safari), and <strong>OS behavior</strong> (keyboard, status bar, safe areas).</p>
+
+  <div class="device-compare">
+    <div class="device-card" style="background:#0f2744;border:1px solid #1e3a5f">
+      <h4 style="color:#93c5fd;">🖥️ Desktop</h4>
+      <ul style="font-size:0.84rem;margin-top:6px">
+        <li>Mouse + keyboard input</li>
+        <li>Hover states work</li>
+        <li>Large screen (1280px–2560px+)</li>
+        <li>Right-click context menus</li>
+        <li>High CPU/RAM available</li>
+        <li>No virtual keyboard</li>
+        <li>No safe area insets</li>
+        <li>Stable network usually</li>
+      </ul>
+    </div>
+    <div class="device-card" style="background:#1a0f3d;border:1px solid #4c1d95">
+      <h4 style="color:#c4b5fd;">📱 Mobile</h4>
+      <ul style="font-size:0.84rem;margin-top:6px">
+        <li>Touch input (finger-sized targets!)</li>
+        <li>No hover states</li>
+        <li>Small screen (360px–430px)</li>
+        <li>Swipe gestures</li>
+        <li>Limited CPU/RAM</li>
+        <li>Virtual keyboard pushes layout up</li>
+        <li>Safe area / notch insets</li>
+        <li>Variable network (3G/4G/5G/Wi-Fi)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Key Mobile-Specific Issues to Test</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>Touch & Input</h4>
+      <ul style="font-size:0.84rem">
+        <li>Tap targets minimum <strong>44×44px</strong> (Apple HIG) or <strong>48×48dp</strong> (Material)</li>
+        <li>Buttons not too close together (fat-finger problem)</li>
+        <li>Swipe left/right doesn't conflict with browser navigation</li>
+        <li>Pinch-to-zoom works on images but not accidentally on forms</li>
+        <li>Scroll works smoothly inside scrollable containers</li>
+        <li>Long-press behavior (select text, context menu)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Virtual Keyboard</h4>
+      <ul style="font-size:0.84rem">
+        <li>Input type <code>email</code> → shows @ key on keyboard</li>
+        <li>Input type <code>tel</code> → shows number pad</li>
+        <li>Input type <code>number</code> → shows numeric keyboard</li>
+        <li>Keyboard doesn't cover the active input</li>
+        <li>Form still submittable when keyboard is open</li>
+        <li>Content doesn't jump when keyboard opens/closes</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Correct Input Types for Mobile UX</h3>
+  <div class="code-block">
+<span style="color:#7c3aed">&lt;!-- Each shows a DIFFERENT keyboard on mobile --&gt;</span><br>
+&lt;input type=<span style="color:#86efac">"email"</span>&gt;     <span style="color:#475569">→ @ . com keys prominent</span><br>
+&lt;input type=<span style="color:#86efac">"tel"</span>&gt;       <span style="color:#475569">→ phone number pad</span><br>
+&lt;input type=<span style="color:#86efac">"number"</span>&gt;    <span style="color:#475569">→ numeric keyboard</span><br>
+&lt;input type=<span style="color:#86efac">"search"</span>&gt;    <span style="color:#475569">→ shows search/go button</span><br>
+&lt;input type=<span style="color:#86efac">"url"</span>&gt;       <span style="color:#475569">→ / and .com keys</span><br>
+&lt;input type=<span style="color:#86efac">"date"</span>&gt;      <span style="color:#475569">→ native date picker</span><br>
+&lt;input type=<span style="color:#86efac">"password"</span>&gt;  <span style="color:#475569">→ masks characters</span><br><br>
+<span style="color:#7c3aed">&lt;!-- inputmode: more keyboard control --&gt;</span><br>
+&lt;input inputmode=<span style="color:#86efac">"decimal"</span>&gt; <span style="color:#475569">→ decimal number pad</span><br>
+&lt;input inputmode=<span style="color:#86efac">"numeric"</span>&gt; <span style="color:#475569">→ 0–9 only</span>
+  </div>
+
+  <h3>Device Testing Checklist</h3>
+  <ul class="checklist" id="device-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>All tap targets are at least 44×44px</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Virtual keyboard does not cover active input field</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Input types show correct mobile keyboard</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Horizontal scrolling does not appear unintentionally</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Text is readable without pinching/zooming</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Images load correctly on retina/HiDPI screens</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page works on slow 3G connection (test in DevTools)</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>No hover-dependent UI on touch devices</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Navigation works with touch/swipe gestures</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Safe area / notch does not cut off content (iPhone)</li>
+  </ul>
+  <div id="device-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 10 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="device-prog-fill" style="width:0%"></div></div>
+
+  <h3>How to Test Devices Without Physical Devices</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Method</th><th>How</th><th>Accuracy</th></tr>
+    <tr><td>Chrome DevTools Device Mode</td><td>F12 → Toggle Device Toolbar → select device</td><td>Good for layout, not perfect for touch/Safari</td></tr>
+    <tr><td>Xcode Simulator (macOS)</td><td>Simulates real iOS — best Safari testing</td><td>Excellent for iOS/Safari</td></tr>
+    <tr><td>Android Emulator</td><td>Android Studio AVD Manager</td><td>Good for Android testing</td></tr>
+    <tr><td>BrowserStack / LambdaTest</td><td>Real devices in the cloud via browser</td><td>Best — real hardware</td></tr>
+    <tr><td>Your own phone</td><td>Connect via USB for remote debugging</td><td>Best — your actual device</td></tr>
+  </table></div>
+</div>
+
+<!-- ========== UI/UX TESTING ========== -->
+<div class="section" id="uiux">
+  <h2>🎨 UI / UX Testing Basics</h2>
+  <p class="subtitle">Testing that the interface is correct, accessible, and delightful</p>
+
+  <h3>UI Testing vs UX Testing</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>UI Testing (User Interface)</h4>
+      <p style="font-size:0.85rem;">Tests the <strong>visual correctness</strong> of the interface — does it look right?</p>
+      <ul style="font-size:0.84rem;margin-top:6px">
+        <li>Colors, fonts, spacing match design</li>
+        <li>Icons and images display correctly</li>
+        <li>Buttons and inputs are styled correctly</li>
+        <li>Layout doesn't break at any screen size</li>
+        <li>Visual consistency across all pages</li>
+        <li>Error/success/loading states are visible</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>UX Testing (User Experience)</h4>
+      <p style="font-size:0.85rem;">Tests <strong>how easy it is to use</strong> — does it feel right?</p>
+      <ul style="font-size:0.84rem;margin-top:6px">
+        <li>User can complete tasks without confusion</li>
+        <li>Error messages are helpful and clear</li>
+        <li>Navigation is intuitive</li>
+        <li>Loading states communicate progress</li>
+        <li>Confirmation dialogs prevent accidents</li>
+        <li>Undo is available for destructive actions</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Accessibility Testing (a11y)</h3>
+  <p>Accessibility is both a legal requirement (in many countries) and good UX. About <strong>15% of people worldwide have a disability</strong> that affects how they use the web.</p>
+  <ul>
+    <li><strong>Color contrast</strong> — Text must have at least 4.5:1 ratio against background (WCAG AA)</li>
+    <li><strong>Keyboard navigation</strong> — Every interactive element must be reachable with Tab key</li>
+    <li><strong>Focus indicators</strong> — Focused element must have a visible outline</li>
+    <li><strong>Alt text</strong> — All images must have descriptive <code>alt</code> attributes</li>
+    <li><strong>ARIA labels</strong> — Buttons without text must have <code>aria-label</code></li>
+    <li><strong>Form labels</strong> — Every input must have an associated <code>&lt;label&gt;</code></li>
+    <li><strong>Heading hierarchy</strong> — H1 → H2 → H3 in logical order, not skipping levels</li>
+    <li><strong>Screen reader</strong> — Test with VoiceOver (Mac) or NVDA (Windows)</li>
+  </ul>
+
+  <div class="code-block">
+<span style="color:#7c3aed">/* ❌ BAD — no label, no aria */</span><br>
+&lt;button&gt;&lt;img src="close.svg"&gt;&lt;/button&gt;<br><br>
+<span style="color:#7c3aed">/* ✅ GOOD — screen reader reads "Close dialog" */</span><br>
+&lt;button aria-label=<span style="color:#86efac">"Close dialog"</span>&gt;&lt;img src="close.svg" alt=""&gt;&lt;/button&gt;<br><br>
+<span style="color:#7c3aed">/* ❌ BAD — input without label */</span><br>
+&lt;input type=<span style="color:#86efac">"text"</span> placeholder=<span style="color:#86efac">"Enter email"</span>&gt;<br><br>
+<span style="color:#7c3aed">/* ✅ GOOD — input with associated label */</span><br>
+&lt;label for=<span style="color:#86efac">"email"</span>&gt;Email address&lt;/label&gt;<br>
+&lt;input type=<span style="color:#86efac">"email"</span> id=<span style="color:#86efac">"email"</span>&gt;
+  </div>
+
+  <h3>UI/UX Testing Checklist</h3>
+  <ul class="checklist" id="uiux-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>All colors match the design system / brand guidelines</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Text contrast ratio meets WCAG AA (4.5:1 minimum)</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>All interactive elements are keyboard-accessible</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Focus states are clearly visible on all focusable elements</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>All images have descriptive alt text</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Error messages clearly explain what went wrong and how to fix</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Loading spinners/skeletons appear during async operations</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Success/failure feedback is provided after every user action</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Destructive actions (delete, etc.) require confirmation</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Page title changes to reflect current page content</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Fonts are consistent and readable at all sizes</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Spacing and alignment are consistent across pages</li>
+  </ul>
+  <div id="uiux-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 12 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="uiux-prog-fill" style="width:0%"></div></div>
+
+  <h3>Accessibility Tools</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Tool</th><th>Type</th><th>What it checks</th></tr>
+    <tr><td><strong>axe DevTools</strong></td><td>Browser extension</td><td>Automated a11y audit — finds ~57% of issues automatically</td></tr>
+    <tr><td><strong>Lighthouse</strong></td><td>Built into Chrome DevTools</td><td>Accessibility score + specific recommendations</td></tr>
+    <tr><td><strong>WAVE</strong></td><td>Browser extension / web</td><td>Visual overlay of accessibility errors</td></tr>
+    <tr><td><strong>Color.review</strong></td><td>Web tool</td><td>Check color contrast ratios interactively</td></tr>
+    <tr><td><strong>VoiceOver</strong></td><td>Built into macOS/iOS</td><td>Real screen reader — Cmd+F5 to activate</td></tr>
+    <tr><td><strong>NVDA</strong></td><td>Free Windows screen reader</td><td>Most popular screen reader on Windows</td></tr>
+  </table></div>
+</div>
+
+<!-- ========== RESPONSIVE DESIGN ========== -->
+<div class="section" id="responsive">
+  <h2>📐 Responsive Design Testing</h2>
+  <p class="subtitle">Verifying the layout adapts correctly to every screen size</p>
+
+  <h3>What is Responsive Design?</h3>
+  <p><strong>Responsive design</strong> means the layout fluidly adapts to any screen width — from a 320px phone to a 4K monitor — using CSS media queries, flexible grids, and fluid images.</p>
+
+  <h3>Standard Breakpoints</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Breakpoint</th><th>Device Type</th><th>Typical Width</th><th>Test Focus</th></tr>
+    <tr><td>XS</td><td>Small phones</td><td>320px – 375px</td><td>Nothing overflows, text is readable</td></tr>
+    <tr><td>SM</td><td>Large phones</td><td>376px – 480px</td><td>Standard mobile layout</td></tr>
+    <tr><td>MD</td><td>Tablets (portrait)</td><td>481px – 768px</td><td>Layout switch point — sidebar or stack</td></tr>
+    <tr><td>LG</td><td>Tablets (landscape) / small laptop</td><td>769px – 1024px</td><td>Full nav visible, content columns</td></tr>
+    <tr><td>XL</td><td>Desktop</td><td>1025px – 1440px</td><td>Full desktop layout</td></tr>
+    <tr><td>2XL</td><td>Wide / 4K monitor</td><td>1441px+</td><td>No overly stretched text, max-width applied</td></tr>
+  </table></div>
+
+  <h3>How to Test Responsiveness</h3>
+  <h4>Method 1: Chrome DevTools Device Mode</h4>
+  <ol>
+    <li>Press <code>F12</code> to open DevTools</li>
+    <li>Click the Toggle Device Toolbar icon (📱) or press <code>Ctrl+Shift+M</code></li>
+    <li>Select a device from the dropdown OR enter a custom width</li>
+    <li>Drag the handle to resize and watch layout change in real time</li>
+    <li>Click "Responsive" and type exact pixel widths to test breakpoints</li>
+  </ol>
+
+  <h4>Method 2: CSS Media Query Testing</h4>
+  <div class="code-block">
+<span style="color:#7c3aed">/* Mobile first approach — start with mobile styles */</span><br>
+.container { width: 100%; padding: 0 16px; }<br><br>
+<span style="color:#7c3aed">/* Tablet */</span><br>
+@media (min-width: 768px) {<br>
+&nbsp;&nbsp;.container { max-width: 720px; margin: 0 auto; }<br>
+&nbsp;&nbsp;.sidebar { display: block; } <span style="color:#475569">/* show sidebar */</span><br>
+}<br><br>
+<span style="color:#7c3aed">/* Desktop */</span><br>
+@media (min-width: 1024px) {<br>
+&nbsp;&nbsp;.container { max-width: 960px; }<br>
+&nbsp;&nbsp;.grid { grid-template-columns: 1fr 1fr 1fr; }<br>
+}<br><br>
+<span style="color:#7c3aed">/* Test: resize browser window slowly and watch */</span><br>
+<span style="color:#7c3aed">/* for ANY layout jump or overflow */</span>
+  </div>
+
+  <h3>Common Responsive Design Bugs</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Bug</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Horizontal scrollbar appears on mobile</td><td>Element wider than viewport</td><td><code>max-width: 100%</code> on images; avoid fixed widths</td></tr>
+    <tr><td>Text too small on mobile</td><td>No viewport meta tag</td><td>Add <code>&lt;meta name="viewport" content="width=device-width"&gt;</code></td></tr>
+    <tr><td>Buttons overlap on small screen</td><td>Fixed pixel widths</td><td>Use <code>width: 100%</code> or <code>flex-wrap: wrap</code></td></tr>
+    <tr><td>Images stretched or cropped oddly</td><td>Fixed height + wrong object-fit</td><td><code>object-fit: cover</code> or <code>object-fit: contain</code></td></tr>
+    <tr><td>Navbar overflows on small screen</td><td>No hamburger menu</td><td>Implement responsive nav with hamburger at mobile breakpoint</td></tr>
+    <tr><td>Font too large on desktop</td><td>Absolute px values</td><td>Use <code>clamp()</code> or responsive typography scale</td></tr>
+    <tr><td>Table breaks layout</td><td>Table wider than screen</td><td>Wrap in <code>overflow-x: auto</code> container</td></tr>
+  </table></div>
+
+  <h3>Responsive Testing Checklist</h3>
+  <ul class="checklist" id="resp-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>No horizontal scroll at 320px, 375px, 768px, 1024px, 1440px</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Viewport meta tag is present in &lt;head&gt;</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Images scale down and don't overflow container</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Navigation collapses to hamburger menu on mobile</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Text remains readable at all breakpoints (min 16px body)</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Tables have overflow scroll wrapper on small screens</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Multi-column layout stacks to single column on mobile</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Form inputs are full-width on mobile</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Modal/dialog fits within screen on all sizes</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Footer content is accessible and not hidden on small screens</li>
+  </ul>
+  <div id="resp-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 10 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="resp-prog-fill" style="width:0%"></div></div>
+
+  <div class="tip">💡 <strong>Mobile-First Development:</strong> Write CSS for mobile first, then add media queries for larger screens with <code>min-width</code>. This forces you to prioritize mobile and results in cleaner code.</div>
+</div>
+
+<!-- ========== ALERTS, POPUPS, FRAMES ========== -->
+<div class="section" id="alerts">
+  <h2>🔔 Handling Alerts, Pop-ups & Frames</h2>
+  <p class="subtitle">Testing and automating native dialogs, modals, and iframes</p>
+
+  <h3>Types of Alerts & Dialogs</h3>
+  <div class="three-col">
+    <div class="card">
+      <h4>Native Browser Alert</h4>
+      <p style="font-size:0.83rem;">Created by <code>window.alert()</code>. Blocks the page. Only has an OK button. Cannot be styled.</p>
+      <div class="code-block" style="font-size:0.78rem;margin-top:8px">alert("Hello!");</div>
+    </div>
+    <div class="card">
+      <h4>Confirm Dialog</h4>
+      <p style="font-size:0.83rem;">Created by <code>window.confirm()</code>. Returns <code>true</code> (OK) or <code>false</code> (Cancel).</p>
+      <div class="code-block" style="font-size:0.78rem;margin-top:8px">const ok = confirm("Delete?");<br>if (ok) deleteItem();</div>
+    </div>
+    <div class="card">
+      <h4>Prompt Dialog</h4>
+      <p style="font-size:0.83rem;">Created by <code>window.prompt()</code>. Returns the text the user entered, or <code>null</code> if cancelled.</p>
+      <div class="code-block" style="font-size:0.78rem;margin-top:8px">const name = prompt("Name?");</div>
+    </div>
+  </div>
+
+  <h3>Live Alert Demo</h3>
+  <div class="alert-demo">
+    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:14px;">Click the buttons to see each type of native browser dialog</p>
+    <button class="btn-demo btn-purple" onclick="demoAlert()">🔔 alert()</button>
+    <button class="btn-demo btn-green" onclick="demoConfirm()">✅ confirm()</button>
+    <button class="btn-demo btn-orange" onclick="demoPrompt()">✏️ prompt()</button>
+    <div class="alert-output" id="alert-output">→ Click a button to see the result here...</div>
+  </div>
+
+  <h3>Custom Modal Dialogs (HTML/CSS)</h3>
+  <p>Modern apps replace native browser dialogs with <strong>custom modals</strong> built in HTML/CSS. These can be fully styled and are preferred for UX.</p>
+  <div class="code-block">
+<span style="color:#7c3aed">&lt;!-- Custom Modal HTML Structure --&gt;</span><br>
+&lt;div id=<span style="color:#86efac">"modal"</span> role=<span style="color:#86efac">"dialog"</span> aria-modal=<span style="color:#86efac">"true"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp; aria-labelledby=<span style="color:#86efac">"modal-title"</span>&gt;<br>
+&nbsp;&nbsp;&lt;div class=<span style="color:#86efac">"modal-overlay"</span> onclick=<span style="color:#86efac">"closeModal()"</span>&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&lt;div class=<span style="color:#86efac">"modal-content"</span>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;h2 id=<span style="color:#86efac">"modal-title"</span>&gt;Confirm Delete&lt;/h2&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;This action cannot be undone.&lt;/p&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;button onclick=<span style="color:#86efac">"closeModal()"</span>&gt;Cancel&lt;/button&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;button onclick=<span style="color:#86efac">"confirmDelete()"</span>&gt;Delete&lt;/button&gt;<br>
+&nbsp;&nbsp;&lt;/div&gt;<br>
+&lt;/div&gt;
+  </div>
+
+  <h3>What to Test in Modals & Pop-ups</h3>
+  <ul>
+    <li><strong>Opens correctly</strong> — Modal appears when trigger is clicked</li>
+    <li><strong>Closes correctly</strong> — X button, Cancel button, and Escape key all close it</li>
+    <li><strong>Overlay click</strong> — Clicking outside the modal closes it (unless intentionally prevented)</li>
+    <li><strong>Focus trap</strong> — Tab key should cycle only within the modal, not reach background elements</li>
+    <li><strong>Focus restoration</strong> — After closing, focus returns to the element that opened the modal</li>
+    <li><strong>Scroll lock</strong> — Background page should not scroll while modal is open</li>
+    <li><strong>Screen reader</strong> — Modal is announced properly via ARIA role="dialog"</li>
+    <li><strong>Multiple modals</strong> — Stacked modals close in the right order</li>
+    <li><strong>Mobile</strong> — Modal fits screen, is scrollable if content is tall</li>
+  </ul>
+
+  <h3>Automating Alert Handling with Playwright</h3>
+  <div class="code-block">
+<span style="color:#7c3aed">// Accept a native browser alert</span><br>
+page.on(<span style="color:#86efac">'dialog'</span>, async dialog => {<br>
+&nbsp;&nbsp;console.log(dialog.message()); <span style="color:#475569">// get the text</span><br>
+&nbsp;&nbsp;await dialog.accept();         <span style="color:#475569">// click OK</span><br>
+});<br><br>
+<span style="color:#7c3aed">// Dismiss a confirm dialog (click Cancel)</span><br>
+page.on(<span style="color:#86efac">'dialog'</span>, async dialog => {<br>
+&nbsp;&nbsp;await dialog.dismiss();<br>
+});<br><br>
+<span style="color:#7c3aed">// Fill a prompt dialog</span><br>
+page.on(<span style="color:#86efac">'dialog'</span>, async dialog => {<br>
+&nbsp;&nbsp;await dialog.accept(<span style="color:#86efac">'John Doe'</span>); <span style="color:#475569">// type and click OK</span><br>
+});
+  </div>
+
+  <h3>iFrames — What They Are</h3>
+  <p>An <strong>iframe (inline frame)</strong> is an HTML element that embeds another webpage inside the current one. Common uses: embedded YouTube videos, Google Maps, payment forms (Stripe, PayPal), third-party widgets.</p>
+  <div class="code-block">
+<span style="color:#7c3aed">&lt;!-- Embedding another page inside this page --&gt;</span><br>
+&lt;iframe<br>
+&nbsp;&nbsp;src=<span style="color:#86efac">"https://maps.google.com/embed?..."</span><br>
+&nbsp;&nbsp;width=<span style="color:#86efac">"600"</span><br>
+&nbsp;&nbsp;height=<span style="color:#86efac">"400"</span><br>
+&nbsp;&nbsp;title=<span style="color:#86efac">"Store Location Map"</span><br>
+&nbsp;&nbsp;loading=<span style="color:#86efac">"lazy"</span><br>
+&gt;&lt;/iframe&gt;
+  </div>
+
+  <h3>What to Test in iFrames</h3>
+  <ul>
+    <li><strong>Loads correctly</strong> — Embedded content appears without errors</li>
+    <li><strong>Correct size</strong> — No scrollbars inside iframe, not cropped</li>
+    <li><strong>Responsive</strong> — iframe scales on small screens (use <code>aspect-ratio</code>)</li>
+    <li><strong>Fallback</strong> — Meaningful message shown if iframe fails to load</li>
+    <li><strong>Accessibility</strong> — Must have a <code>title</code> attribute for screen readers</li>
+    <li><strong>HTTPS in HTTPS</strong> — A page served over HTTPS cannot embed HTTP iframes (mixed content)</li>
+    <li><strong>Cross-origin restrictions</strong> — Cannot access iframe DOM if different origin (security)</li>
+    <li><strong>Keyboard navigation</strong> — Tab should be able to enter and exit the iframe</li>
+  </ul>
+
+  <h3>Automating iFrame Interaction with Playwright</h3>
+  <div class="code-block">
+<span style="color:#7c3aed">// Locate an iframe and interact inside it</span><br>
+const frame = page.frameLocator(<span style="color:#86efac">'iframe[title="Payment Form"]'</span>);<br><br>
+<span style="color:#7c3aed">// Now interact with elements INSIDE the iframe</span><br>
+await frame.locator(<span style="color:#86efac">'#card-number'</span>).fill(<span style="color:#86efac">'4242424242424242'</span>);<br>
+await frame.locator(<span style="color:#86efac">'#expiry'</span>).fill(<span style="color:#86efac">'12/28'</span>);<br>
+await frame.locator(<span style="color:#86efac">'#cvc'</span>).fill(<span style="color:#86efac">'123'</span>);<br><br>
+<span style="color:#7c3aed">// Or using the older frame() method:</span><br>
+const iframe = page.frame({ name: <span style="color:#86efac">'payment'</span> });<br>
+await iframe.fill(<span style="color:#86efac">'#card-number'</span>, <span style="color:#86efac">'4242...'</span>);
+  </div>
+
+  <h3>Responsive iframe (Correct Approach)</h3>
+  <div class="code-block">
+<span style="color:#7c3aed">/* ❌ BAD — fixed pixel height breaks on mobile */</span><br>
+iframe { width: 100%; height: 315px; }<br><br>
+<span style="color:#7c3aed">/* ✅ GOOD — maintains 16:9 ratio at any width */</span><br>
+.iframe-wrapper {<br>
+&nbsp;&nbsp;position: relative;<br>
+&nbsp;&nbsp;width: 100%;<br>
+&nbsp;&nbsp;aspect-ratio: 16 / 9; <span style="color:#475569">/* modern approach */</span><br>
+}<br>
+.iframe-wrapper iframe {<br>
+&nbsp;&nbsp;position: absolute;<br>
+&nbsp;&nbsp;inset: 0; width: 100%; height: 100%;<br>
+}
+  </div>
+
+  <div class="success">✅ <strong>Key Rule:</strong> Native browser dialogs (alert/confirm/prompt) block JavaScript execution entirely. Always handle them BEFORE the action that triggers them in automated tests.</div>
+
+  <h3>Alerts & Frames Final Checklist</h3>
+  <ul class="checklist" id="alert-checklist">
+    <li onclick="toggleCheck(this)"><div class="chk"></div>alert() displays the correct message</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>confirm() OK triggers the intended action</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>confirm() Cancel cancels the intended action</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Custom modal opens and closes correctly</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Escape key closes modal</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Focus is trapped inside open modal</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>Background scrolling is locked when modal is open</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>iFrame loads content correctly</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>iFrame has title attribute for accessibility</li>
+    <li onclick="toggleCheck(this)"><div class="chk"></div>iFrame is responsive and doesn't cause horizontal scroll</li>
+  </ul>
+  <div id="alert-progress" style="margin-top:10px;font-size:0.82rem;color:#64748b;">0 / 10 completed</div>
+  <div class="progress-bar"><div class="progress-fill" id="alert-prog-fill" style="width:0%"></div></div>
+</div>
+
+</div><!-- content -->
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const ids = ['func','browser','device','uiux','responsive','alerts'];
+  document.querySelectorAll('.nav-btn')[ids.indexOf(id)].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleTC(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.tc-arrow');
+  body.classList.toggle('open');
+  arrow.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+const checklists = {
+  'form-checklist': { prog: 'form-prog-fill', label: 'form-progress', total: 12 },
+  'browser-checklist': { prog: 'browser-prog-fill', label: 'browser-progress', total: 10 },
+  'device-checklist': { prog: 'device-prog-fill', label: 'device-progress', total: 10 },
+  'uiux-checklist': { prog: 'uiux-prog-fill', label: 'uiux-progress', total: 12 },
+  'resp-checklist': { prog: 'resp-prog-fill', label: 'resp-progress', total: 10 },
+  'alert-checklist': { prog: 'alert-prog-fill', label: 'alert-progress', total: 10 },
+};
+
+function toggleCheck(li) {
+  li.classList.toggle('checked');
+  const chk = li.querySelector('.chk');
+  chk.textContent = li.classList.contains('checked') ? '✓' : '';
+  const list = li.closest('ul');
+  if (!list) return;
+  const cfg = checklists[list.id];
+  if (!cfg) return;
+  const done = list.querySelectorAll('li.checked').length;
+  document.getElementById(cfg.label).textContent = `${done} / ${cfg.total} completed`;
+  document.getElementById(cfg.prog).style.width = `${(done / cfg.total) * 100}%`;
+}
+
+function demoAlert() {
+  const out = document.getElementById('alert-output');
+  out.textContent = '→ Showing alert dialog... (click OK to dismiss)';
+  setTimeout(() => {
+    alert('This is a browser alert!\nIt blocks JavaScript until you click OK.');
+    out.textContent = '→ alert() was dismissed. JavaScript resumed.';
+  }, 100);
+}
+function demoConfirm() {
+  const out = document.getElementById('alert-output');
+  out.textContent = '→ Showing confirm dialog...';
+  setTimeout(() => {
+    const result = confirm('Do you want to proceed?\n\nClick OK or Cancel.');
+    out.textContent = result
+      ? '→ confirm() returned: true (user clicked OK) → action would proceed'
+      : '→ confirm() returned: false (user clicked Cancel) → action cancelled';
+  }, 100);
+}
+function demoPrompt() {
+  const out = document.getElementById('alert-output');
+  out.textContent = '→ Showing prompt dialog...';
+  setTimeout(() => {
+    const result = prompt('Enter your name:', 'John Doe');
+    out.textContent = result !== null
+      ? `→ prompt() returned: "${result}" → would use this value`
+      : '→ prompt() returned: null (user cancelled)';
+  }, 100);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1e3a5f, #0d2137); padding: 24px 32px 18px; border-bottom: 2px solid #2563eb; }
+.header h1 { font-size: 1.5rem; color: #93c5fd; }
+.header p { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+.nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 32px; background: #131720; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100; }
+.nav-btn { padding: 6px 13px; border-radius: 18px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.78rem; transition: all 0.2s; }
+.nav-btn:hover, .nav-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+.content { padding: 30px 32px; max-width: 900px; }
+.section { display: none; }
+.section.active { display: block; }
+
+h2 { font-size: 1.35rem; color: #60a5fa; margin-bottom: 4px; }
+h3 { font-size: 1.05rem; color: #fbbf24; margin: 22px 0 8px; }
+h4 { font-size: 0.92rem; color: #a3e635; margin: 14px 0 6px; }
+.subtitle { color: #475569; font-size: 0.82rem; margin-bottom: 18px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+p { color: #cbd5e1; line-height: 1.75; font-size: 0.9rem; margin-bottom: 12px; }
+ul, ol { color: #cbd5e1; font-size: 0.9rem; line-height: 1.8; padding-left: 22px; margin-bottom: 12px; }
+li { margin-bottom: 4px; }
+code { background: #1e293b; color: #fbbf24; padding: 1px 6px; border-radius: 4px; font-size: 0.85rem; font-family: 'Courier New', monospace; }
+
+.tip { background: #0f2744; border-left: 3px solid #3b82f6; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.87rem; color: #93c5fd; line-height: 1.65; }
+.warn { background: #2d1b00; border-left: 3px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.87rem; color: #fbbf24; line-height: 1.65; }
+.danger { background: #1f0f0f; border-left: 3px solid #ef4444; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.87rem; color: #fca5a5; line-height: 1.65; }
+.success { background: #0a1f0f; border-left: 3px solid #22c55e; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.87rem; color: #86efac; line-height: 1.65; }
+
+.diagram { background: #131720; border: 1px solid #1e3a5f; border-radius: 10px; padding: 18px; margin: 14px 0; }
+.flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 8px 0; }
+.box { padding: 9px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-align: center; min-width: 90px; }
+.box.blue { background: #1d4ed8; color: #bfdbfe; border: 1px solid #3b82f6; }
+.box.green { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+.box.orange { background: #7c2d12; color: #fdba74; border: 1px solid #f97316; }
+.box.purple { background: #4c1d95; color: #c4b5fd; border: 1px solid #8b5cf6; }
+.box.gray { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+.box.red { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+.arrow { color: #475569; font-size: 1.1rem; }
+
+.code-block { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px 18px; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #a5f3fc; line-height: 1.9; margin: 10px 0; overflow-x: auto; }
+.code-label { color: #64748b; font-size: 0.73rem; margin-bottom: 6px; font-family: sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.hl-m { color: #f472b6; font-weight: bold; }
+.hl-p { color: #a3e635; }
+.hl-h { color: #fbbf24; }
+.hl-v { color: #a5f3fc; }
+.hl-s { color: #34d399; font-weight: bold; }
+.hl-c { color: #475569; font-style: italic; }
+.hl-k { color: #c4b5fd; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 12px 0; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+
+.card { background: #131720; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
+.card h4 { margin-top: 0; }
+
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #1e3a5f; color: #93c5fd; padding: 9px 12px; text-align: left; font-size: 0.82rem; }
+td { padding: 9px 12px; font-size: 0.83rem; border-bottom: 1px solid #1e293b; vertical-align: top; color: #cbd5e1; }
+tr:hover td { background: #131720; }
+.tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; display: inline-block; }
+.t-req { background: #1d4ed8; color: #bfdbfe; }
+.t-res { background: #14532d; color: #86efac; }
+.t-both { background: #4c1d95; color: #c4b5fd; }
+
+.status-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; margin: 6px 0; }
+.s-badge { font-family: monospace; font-size: 1rem; font-weight: 800; min-width: 50px; text-align: center; padding: 4px 0; border-radius: 6px; }
+.s2b { background: #14532d; color: #86efac; }
+.s3b { background: #1e3a5f; color: #93c5fd; }
+.s4b { background: #7c2d12; color: #fdba74; }
+.s5b { background: #4c1d95; color: #c4b5fd; }
+.s-text h4 { margin: 0 0 4px; font-size: 0.88rem; }
+.s-text p { margin: 0; font-size: 0.84rem; color: #94a3b8; }
+.s-text .use { color: #64748b; font-size: 0.8rem; margin-top: 4px; display: block; }
+
+.layer-block { display: flex; align-items: stretch; gap: 0; margin: 5px 0; border-radius: 8px; overflow: hidden; }
+.layer-num { padding: 12px 14px; font-weight: 900; font-size: 1.1rem; display: flex; align-items: center; min-width: 44px; justify-content: center; }
+.layer-body { padding: 10px 14px; flex: 1; }
+.layer-body strong { font-size: 0.88rem; display: block; }
+.layer-body span { font-size: 0.82rem; color: #94a3b8; }
+.layer-body em { font-size: 0.78rem; color: #475569; display: block; margin-top: 3px; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.compare-card { padding: 16px; border-radius: 10px; }
+
+@media(max-width:600px) { .content { padding: 18px 14px; } .nav { padding: 10px 14px; } .two-col,.three-col,.compare { grid-template-columns: 1fr; } .header { padding: 18px 14px; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🌐 Web Fundamentals — Deep Dive</h1>
+  <p>Detailed explanations with examples, diagrams, and real-world context</p>
+</div>
+<div class="nav">
+  <button class="nav-btn active" onclick="show('cs')">1. Client-Server</button>
+  <button class="nav-btn" onclick="show('tcp')">2. TCP/IP</button>
+  <button class="nav-btn" onclick="show('http')">3. HTTP & HTTPS</button>
+  <button class="nav-btn" onclick="show('rr')">4. Requests & Responses</button>
+  <button class="nav-btn" onclick="show('sc')">5. Status Codes</button>
+  <button class="nav-btn" onclick="show('hd')">6. Headers</button>
+</div>
+<div class="content">
+
+<!-- ===================== CLIENT-SERVER ===================== -->
+<div class="section active" id="cs">
+  <h2>🖥️ Client-Server Architecture</h2>
+  <p class="subtitle">The model that defines how the entire internet works</p>
+
+  <h3>What is it?</h3>
+  <p>The <strong>client-server model</strong> is an architecture where two types of computers communicate over a network: <strong>clients</strong> that request services, and <strong>servers</strong> that provide them. This is the foundation of the internet — every website visit, API call, or app you use follows this pattern.</p>
+
+  <div class="diagram">
+    <div class="flow">
+      <div>
+        <div class="box blue" style="margin-bottom:6px">🧑 CLIENT</div>
+        <div style="font-size:0.75rem;color:#64748b;text-align:center">Browser / Mobile App<br>Desktop App / CLI tool</div>
+      </div>
+      <div style="text-align:center">
+        <div style="color:#3b82f6;font-size:0.78rem;margin-bottom:2px;">① HTTP Request →</div>
+        <div style="color:#334155;font-size:1.4rem;">━━━━━━</div>
+        <div style="color:#22c55e;font-size:0.78rem;margin-top:2px;">← ② HTTP Response</div>
+      </div>
+      <div>
+        <div class="box green" style="margin-bottom:6px">🖥️ SERVER</div>
+        <div style="font-size:0.75rem;color:#64748b;text-align:center">Web Server / API Server<br>Database Server / CDN</div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:0.76rem;margin-top:10px;">All communication happens over the Internet using standard protocols</div>
+  </div>
+
+  <h3>The Client</h3>
+  <p>A client is any software that <strong>initiates a request</strong>. It is always the one that starts the conversation — servers never reach out to clients on their own (in standard HTTP).</p>
+  <ul>
+    <li><strong>Web Browser</strong> — Chrome, Firefox, Safari (the most common client)</li>
+    <li><strong>Mobile App</strong> — Instagram app, banking app (talking to backend servers)</li>
+    <li><strong>CLI tools</strong> — <code>curl</code>, <code>wget</code> — make HTTP requests from the terminal</li>
+    <li><strong>Your own code</strong> — a Python <code>requests.get()</code> call is also a client</li>
+  </ul>
+
+  <h3>The Server</h3>
+  <p>A server is software that <strong>listens for incoming requests</strong> and responds to them. It runs continuously, waiting for clients to connect.</p>
+  <ul>
+    <li><strong>Web Server</strong> — Nginx, Apache — serves HTML, CSS, JS files</li>
+    <li><strong>Application Server</strong> — Node.js, Django, Spring — runs business logic</li>
+    <li><strong>Database Server</strong> — PostgreSQL, MongoDB — stores and retrieves data</li>
+    <li><strong>CDN Server</strong> — Cloudflare, AWS CloudFront — serves static files from locations near the user</li>
+  </ul>
+
+  <h3>How a Real Request Works (Step by Step)</h3>
+  <p>When you type <code>https://example.com/products</code> and press Enter:</p>
+  <ol>
+    <li><strong>DNS Lookup</strong> — Browser converts <code>example.com</code> to an IP address like <code>93.184.216.34</code></li>
+    <li><strong>TCP Connection</strong> — Browser establishes a connection to that IP on port 443</li>
+    <li><strong>TLS Handshake</strong> — Browser and server set up encryption (for HTTPS)</li>
+    <li><strong>HTTP Request</strong> — Browser sends <code>GET /products HTTP/1.1</code></li>
+    <li><strong>Server Processing</strong> — Server reads the request, fetches data, builds a response</li>
+    <li><strong>HTTP Response</strong> — Server sends back <code>200 OK</code> + HTML content</li>
+    <li><strong>Rendering</strong> — Browser parses HTML, requests CSS/JS/images (more requests!)</li>
+    <li><strong>Page displayed</strong> — You see the finished page</li>
+  </ol>
+
+  <h3>Ports</h3>
+  <p>Servers listen on specific <strong>port numbers</strong> — like doors in a building. Each port handles a different type of service:</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Port</th><th>Protocol</th><th>Used For</th></tr>
+      <tr><td><code>80</code></td><td>HTTP</td><td>Unencrypted web traffic</td></tr>
+      <tr><td><code>443</code></td><td>HTTPS</td><td>Encrypted web traffic</td></tr>
+      <tr><td><code>21</code></td><td>FTP</td><td>File transfers</td></tr>
+      <tr><td><code>22</code></td><td>SSH</td><td>Secure shell / remote access</td></tr>
+      <tr><td><code>3306</code></td><td>MySQL</td><td>Database connections</td></tr>
+      <tr><td><code>5432</code></td><td>PostgreSQL</td><td>Database connections</td></tr>
+    </table>
+  </div>
+
+  <h3>Stateless Nature of HTTP</h3>
+  <p>HTTP is <strong>stateless</strong> — the server does NOT remember previous requests from the same client. Every request is treated as brand new. This is why websites use <strong>cookies</strong> and <strong>session tokens</strong> — to re-identify you on each request.</p>
+  <div class="tip">💡 <strong>Analogy:</strong> Imagine calling a call center where the agent has zero memory of your previous calls. Every time you call, you must reintroduce yourself. Websites solve this with cookies — like giving you a membership card to show each time.</div>
+
+  <h3>Peer-to-Peer vs Client-Server</h3>
+  <div class="compare">
+    <div class="compare-card" style="background:#0f2744;border:1px solid #1e3a5f">
+      <h4 style="color:#93c5fd;">Client-Server</h4>
+      <ul style="font-size:0.84rem;">
+        <li>Central server handles everything</li>
+        <li>Easier to manage and secure</li>
+        <li>Server can be a bottleneck</li>
+        <li>Used by: websites, APIs, apps</li>
+      </ul>
+    </div>
+    <div class="compare-card" style="background:#0a1f0f;border:1px solid #14532d">
+      <h4 style="color:#86efac;">Peer-to-Peer (P2P)</h4>
+      <ul style="font-size:0.84rem;">
+        <li>Every node is both client and server</li>
+        <li>No central authority</li>
+        <li>More resilient, harder to control</li>
+        <li>Used by: BitTorrent, blockchain</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TCP/IP ===================== -->
+<div class="section" id="tcp">
+  <h2>📡 TCP/IP In Depth</h2>
+  <p class="subtitle">The plumbing of the internet — how data actually moves</p>
+
+  <h3>What is TCP/IP?</h3>
+  <p>TCP/IP is not a single protocol but a <strong>suite of protocols</strong> working together. It defines how data is broken into pieces, addressed, routed across the internet, and reassembled at the destination. Without it, the internet as we know it wouldn't exist.</p>
+  <ul>
+    <li><strong>IP (Internet Protocol)</strong> — Handles addressing and routing. Gives every device a unique address and routes packets from source to destination.</li>
+    <li><strong>TCP (Transmission Control Protocol)</strong> — Handles reliable, ordered delivery. Makes sure packets arrive, are in order, and asks for retransmission if any are lost.</li>
+  </ul>
+
+  <h3>The 4-Layer TCP/IP Model</h3>
+  <p>Data travels through 4 conceptual layers. When you send data, it moves <strong>down</strong> the layers (adding headers). When received, it moves <strong>up</strong> (stripping headers).</p>
+  <div class="diagram">
+    <div class="layer-block" style="background:#4c1d95;">
+      <div class="layer-num" style="color:#c4b5fd; background: rgba(0,0,0,0.3);">4</div>
+      <div class="layer-body"><strong style="color:#c4b5fd;">Application Layer</strong><span>HTTP, HTTPS, DNS, FTP, SMTP, SSH</span><em>What the application actually sends — the "letter content"</em></div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:0.8rem;margin:3px 0">↕ Encapsulation / Decapsulation</div>
+    <div class="layer-block" style="background:#1d4ed8;">
+      <div class="layer-num" style="color:#bfdbfe; background: rgba(0,0,0,0.3);">3</div>
+      <div class="layer-body"><strong style="color:#bfdbfe;">Transport Layer</strong><span>TCP, UDP — manages ports, flow control, reliability</span><em>Adds "source port" and "destination port" to each segment</em></div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:0.8rem;margin:3px 0">↕</div>
+    <div class="layer-block" style="background:#14532d;">
+      <div class="layer-num" style="color:#86efac; background: rgba(0,0,0,0.3);">2</div>
+      <div class="layer-body"><strong style="color:#86efac;">Internet Layer</strong><span>IP (IPv4/IPv6) — addressing, routing between networks</span><em>Adds source/destination IP addresses — like the envelope address</em></div>
+    </div>
+    <div style="text-align:center;color:#475569;font-size:0.8rem;margin:3px 0">↕</div>
+    <div class="layer-block" style="background:#1e293b;">
+      <div class="layer-num" style="color:#94a3b8; background: rgba(0,0,0,0.3);">1</div>
+      <div class="layer-body"><strong style="color:#94a3b8;">Network Access Layer</strong><span>Ethernet, Wi-Fi, Fiber — physical transmission of bits</span><em>The actual cables, radio waves, and hardware</em></div>
+    </div>
+  </div>
+
+  <h3>IP Addresses</h3>
+  <p>Every device on a network gets an IP address. There are two versions:</p>
+  <div class="two-col">
+    <div class="card">
+      <h4>IPv4</h4>
+      <p style="font-size:0.84rem;">32-bit addresses, written as 4 numbers 0–255 separated by dots.</p>
+      <div class="code-block" style="font-size:0.85rem;">192.168.1.100<br>8.8.8.8  <span class="hl-c">(Google DNS)</span><br>127.0.0.1 <span class="hl-c">(localhost)</span></div>
+      <p style="font-size:0.82rem;color:#64748b;">~4.3 billion possible addresses — we ran out!</p>
+    </div>
+    <div class="card">
+      <h4>IPv6</h4>
+      <p style="font-size:0.84rem;">128-bit addresses, written in hexadecimal groups.</p>
+      <div class="code-block" style="font-size:0.85rem;">2001:0db8:85a3::8a2e<br>:0370:7334</div>
+      <p style="font-size:0.82rem;color:#64748b;">340 undecillion addresses — essentially unlimited</p>
+    </div>
+  </div>
+
+  <h3>TCP vs UDP</h3>
+  <div class="compare">
+    <div class="compare-card" style="background:#0f2744;border:1px solid #1e3a5f;">
+      <h4 style="color:#93c5fd;">TCP — Reliable</h4>
+      <ul style="font-size:0.84rem;margin-top:6px;">
+        <li>Guarantees delivery of all packets</li>
+        <li>Guarantees correct order</li>
+        <li>Slower — more overhead</li>
+        <li>Used for: HTTP, HTTPS, email, file transfer</li>
+      </ul>
+    </div>
+    <div class="compare-card" style="background:#1f1a00;border:1px solid #ca8a04;">
+      <h4 style="color:#fbbf24;">UDP — Fast</h4>
+      <ul style="font-size:0.84rem;margin-top:6px;">
+        <li>Fire-and-forget — no delivery guarantee</li>
+        <li>No ordering guarantee</li>
+        <li>Faster — less overhead</li>
+        <li>Used for: video calls, gaming, live streaming</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The TCP 3-Way Handshake</h3>
+  <p>Before any data is sent, TCP establishes a connection using a 3-step process:</p>
+  <div class="diagram">
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;">
+      <div style="text-align:right;font-size:0.84rem;color:#bfdbfe;">CLIENT</div>
+      <div></div>
+      <div style="text-align:left;font-size:0.84rem;color:#86efac;">SERVER</div>
+
+      <div style="text-align:right;font-size:0.8rem;color:#64748b;">→ "I want to connect"</div>
+      <div style="text-align:center;"><span style="color:#fbbf24;font-family:monospace;font-size:0.85rem;">──── SYN ────→</span></div>
+      <div></div>
+
+      <div></div>
+      <div style="text-align:center;"><span style="color:#34d399;font-family:monospace;font-size:0.85rem;">←── SYN-ACK ──</span></div>
+      <div style="text-align:left;font-size:0.8rem;color:#64748b;">← "OK, I'm ready"</div>
+
+      <div style="text-align:right;font-size:0.8rem;color:#64748b;">→ "Got it, let's go!"</div>
+      <div style="text-align:center;"><span style="color:#fbbf24;font-family:monospace;font-size:0.85rem;">──── ACK ────→</span></div>
+      <div></div>
+
+      <div style="grid-column:1/-1;text-align:center;color:#475569;font-size:0.78rem;padding-top:10px;">🔗 Connection established — data can now flow in both directions</div>
+    </div>
+  </div>
+
+  <h3>DNS — The Internet's Phone Book</h3>
+  <p>You type <code>google.com</code> but computers use IP addresses. <strong>DNS (Domain Name System)</strong> translates one to the other.</p>
+  <div class="diagram">
+    <div class="flow" style="gap:6px;font-size:0.8rem;">
+      <div class="box blue" style="min-width:70px;">Browser</div>
+      <div class="arrow">→</div>
+      <div class="box gray" style="min-width:90px;">DNS Resolver<br><small>(your ISP)</small></div>
+      <div class="arrow">→</div>
+      <div class="box purple" style="min-width:90px;">Root DNS<br><small>(.com server)</small></div>
+      <div class="arrow">→</div>
+      <div class="box green" style="min-width:90px;">Authoritative<br><small>DNS Server</small></div>
+    </div>
+    <div style="text-align:center;color:#34d399;font-size:0.78rem;margin-top:10px;">← Returns IP address: 142.250.80.46 ←←←←←←←←←←←←←←←←←←←←←←←←</div>
+  </div>
+
+  <div class="tip">💡 <strong>Packets:</strong> Large data is broken into small "packets" (usually ~1500 bytes each), sent independently through the internet (possibly via different routes!), then reassembled in order at the destination by TCP.</div>
+</div>
+
+<!-- ===================== HTTP & HTTPS ===================== -->
+<div class="section" id="http">
+  <h2>🔒 HTTP & HTTPS In Depth</h2>
+  <p class="subtitle">The protocol powering every web interaction</p>
+
+  <h3>What is HTTP?</h3>
+  <p><strong>HTTP (HyperText Transfer Protocol)</strong> is an application-layer protocol that defines how messages are formatted and transmitted between a client and server. Every time you visit a webpage, HTTP is the language being spoken.</p>
+  <ul>
+    <li><strong>Text-based</strong> — HTTP messages are human-readable plain text</li>
+    <li><strong>Request-Response</strong> — always one request, one response</li>
+    <li><strong>Stateless</strong> — each request is independent, server has no memory of past requests</li>
+    <li><strong>Application layer</strong> — sits on top of TCP/IP</li>
+  </ul>
+
+  <h3>HTTP Versions</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Version</th><th>Year</th><th>Key Feature</th></tr>
+    <tr><td><code>HTTP/1.0</code></td><td>1996</td><td>One request per TCP connection — very slow</td></tr>
+    <tr><td><code>HTTP/1.1</code></td><td>1997</td><td>Persistent connections (keep-alive), chunked transfer — still widely used</td></tr>
+    <tr><td><code>HTTP/2</code></td><td>2015</td><td>Multiplexing (multiple requests over one connection), binary protocol, header compression</td></tr>
+    <tr><td><code>HTTP/3</code></td><td>2022</td><td>Built on QUIC (UDP-based), faster connection setup, better for mobile/lossy networks</td></tr>
+  </table></div>
+
+  <h3>What is HTTPS?</h3>
+  <p><strong>HTTPS</strong> = HTTP + <strong>TLS (Transport Layer Security)</strong>. TLS is a cryptographic protocol that wraps the HTTP message in an encrypted envelope. The server proves its identity with a <strong>digital certificate</strong>, and both sides agree on an encryption key.</p>
+
+  <div class="compare">
+    <div class="compare-card" style="background:#1f0f0f;border:1px solid #7f1d1d;">
+      <h4 style="color:#fca5a5;">🔓 HTTP</h4>
+      <ul style="font-size:0.84rem;margin-top:6px;">
+        <li>Data in plain text</li>
+        <li>Anyone on same network can read it</li>
+        <li>No identity verification of server</li>
+        <li>URL starts with <code>http://</code></li>
+        <li>Port 80</li>
+      </ul>
+    </div>
+    <div class="compare-card" style="background:#0a1f0f;border:1px solid #14532d;">
+      <h4 style="color:#86efac;">🔒 HTTPS</h4>
+      <ul style="font-size:0.84rem;margin-top:6px;">
+        <li>Data is encrypted (TLS)</li>
+        <li>Interceptors see random bytes</li>
+        <li>Server identity verified by certificate</li>
+        <li>URL starts with <code>https://</code></li>
+        <li>Port 443</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The TLS Handshake (How HTTPS Establishes Security)</h3>
+  <ol>
+    <li><strong>Client Hello</strong> — Client says "I support these TLS versions and encryption algorithms"</li>
+    <li><strong>Server Hello</strong> — Server picks the best algorithm and sends its SSL <strong>certificate</strong></li>
+    <li><strong>Certificate Verification</strong> — Client checks the certificate is valid and signed by a trusted <strong>Certificate Authority (CA)</strong> (like Let's Encrypt, DigiCert)</li>
+    <li><strong>Key Exchange</strong> — Client and server perform math magic to agree on a <strong>shared secret key</strong> without ever sending the key itself (Diffie-Hellman)</li>
+    <li><strong>Finished</strong> — Both confirm they're using the same key. All future messages are encrypted.</li>
+  </ol>
+
+  <h3>SSL Certificates</h3>
+  <p>A certificate contains:</p>
+  <ul>
+    <li>The domain name it's issued for (e.g., <code>example.com</code>)</li>
+    <li>The server's public key</li>
+    <li>The issuing Certificate Authority (CA)</li>
+    <li>Expiry date (usually 90 days to 1 year)</li>
+    <li>Digital signature proving the CA verified it</li>
+  </ul>
+  <div class="warn">⚠️ If you see a "Your connection is not private" warning, the certificate is expired, invalid, or the domain doesn't match. Do NOT proceed if entering sensitive data.</div>
+
+  <h3>HTTP vs HTTPS — What Gets Encrypted?</h3>
+  <ul>
+    <li>✅ <strong>Encrypted:</strong> headers, body, URL path and query string, cookies</li>
+    <li>❌ <strong>NOT encrypted:</strong> the destination IP address and domain name (SNI — visible to ISPs)</li>
+  </ul>
+  <div class="danger">🔴 Never send passwords, tokens, or credit card info over HTTP. It's visible to anyone on your Wi-Fi network — coffee shop, airport, etc.</div>
+</div>
+
+<!-- ===================== REQUESTS & RESPONSES ===================== -->
+<div class="section" id="rr">
+  <h2>📨 HTTP Requests & Responses</h2>
+  <p class="subtitle">The exact structure of every web message</p>
+
+  <h3>HTTP Request Structure</h3>
+  <p>Every HTTP request has 3 parts:</p>
+  <div class="code-block">
+<span class="hl-c">━━━ 1. REQUEST LINE ━━━</span><br>
+<span class="hl-m">POST</span> <span class="hl-p">/api/users</span> HTTP/1.1<br>
+<br>
+<span class="hl-c">━━━ 2. HEADERS ━━━</span><br>
+<span class="hl-h">Host:</span> <span class="hl-v">api.example.com</span><br>
+<span class="hl-h">Content-Type:</span> <span class="hl-v">application/json</span><br>
+<span class="hl-h">Authorization:</span> <span class="hl-v">Bearer eyJhbGci...</span><br>
+<span class="hl-h">Content-Length:</span> <span class="hl-v">47</span><br>
+<br>
+<span class="hl-c">━━━ 3. BODY (blank line separates headers from body) ━━━</span><br>
+{"name": "Alice", "email": "alice@ex.com"}
+  </div>
+
+  <h3>HTTP Response Structure</h3>
+  <div class="code-block">
+<span class="hl-c">━━━ 1. STATUS LINE ━━━</span><br>
+HTTP/1.1 <span class="hl-s">201 Created</span><br>
+<br>
+<span class="hl-c">━━━ 2. HEADERS ━━━</span><br>
+<span class="hl-h">Content-Type:</span> <span class="hl-v">application/json</span><br>
+<span class="hl-h">Content-Length:</span> <span class="hl-v">89</span><br>
+<span class="hl-h">Location:</span> <span class="hl-v">/api/users/1042</span><br>
+<span class="hl-h">Date:</span> <span class="hl-v">Fri, 17 Apr 2026 10:30:00 GMT</span><br>
+<br>
+<span class="hl-c">━━━ 3. BODY ━━━</span><br>
+{"id": 1042, "name": "Alice", "email": "alice@ex.com", "created": true}
+  </div>
+
+  <h3>HTTP Methods — Complete Guide</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Method</th><th>Action</th><th>Has Body?</th><th>Safe?</th><th>Idempotent?</th><th>Example Use</th></tr>
+    <tr><td><code style="color:#f472b6">GET</code></td><td>Retrieve data</td><td>No</td><td>✅ Yes</td><td>✅ Yes</td><td>Load a webpage or API data</td></tr>
+    <tr><td><code style="color:#f472b6">POST</code></td><td>Create resource</td><td>Yes</td><td>❌ No</td><td>❌ No</td><td>Submit a form, create account</td></tr>
+    <tr><td><code style="color:#f472b6">PUT</code></td><td>Replace resource</td><td>Yes</td><td>❌ No</td><td>✅ Yes</td><td>Update entire user profile</td></tr>
+    <tr><td><code style="color:#f472b6">PATCH</code></td><td>Partial update</td><td>Yes</td><td>❌ No</td><td>✅ Yes</td><td>Change just the username field</td></tr>
+    <tr><td><code style="color:#f472b6">DELETE</code></td><td>Remove resource</td><td>Optional</td><td>❌ No</td><td>✅ Yes</td><td>Delete a post or account</td></tr>
+    <tr><td><code style="color:#f472b6">HEAD</code></td><td>Like GET but no body</td><td>No</td><td>✅ Yes</td><td>✅ Yes</td><td>Check if resource exists/changed</td></tr>
+    <tr><td><code style="color:#f472b6">OPTIONS</code></td><td>Ask what's allowed</td><td>No</td><td>✅ Yes</td><td>✅ Yes</td><td>CORS preflight check</td></tr>
+  </table></div>
+  <p style="font-size:0.82rem;color:#64748b;"><strong>Safe</strong> = doesn't modify data on the server. <strong>Idempotent</strong> = calling it multiple times gives same result as calling once.</p>
+
+  <h3>URL Anatomy</h3>
+  <div class="code-block">
+https://api.example.com:443/users/42/posts?page=2&sort=date#top
+  <br><br>
+  <span class="hl-k">https</span>       → Protocol (scheme)<br>
+  <span class="hl-m">api.example.com</span> → Host (domain)<br>
+  <span class="hl-h">:443</span>       → Port (optional, default for https)<br>
+  <span class="hl-p">/users/42/posts</span> → Path (resource location)<br>
+  <span class="hl-s">?page=2&sort=date</span> → Query string (filters/params)<br>
+  <span class="hl-v">#top</span>       → Fragment (client-side anchor, NOT sent to server)
+  </div>
+
+  <h3>Request Body Formats</h3>
+  <div class="three-col">
+    <div class="card">
+      <h4>JSON</h4>
+      <div class="code-block" style="font-size:0.78rem;">{"name":"Alice",<br>"age": 30}</div>
+      <p style="font-size:0.8rem;margin-top:6px;">Most common for APIs</p>
+    </div>
+    <div class="card">
+      <h4>Form Data</h4>
+      <div class="code-block" style="font-size:0.78rem;">name=Alice<br>&age=30</div>
+      <p style="font-size:0.8rem;margin-top:6px;">HTML form submissions</p>
+    </div>
+    <div class="card">
+      <h4>Multipart</h4>
+      <div class="code-block" style="font-size:0.78rem;">--boundary<br>Content-Disposition:<br> form-data; name="file"</div>
+      <p style="font-size:0.8rem;margin-top:6px;">File uploads</p>
+    </div>
+  </div>
+
+  <div class="tip">💡 You can see raw requests and responses in any browser: Press <strong>F12</strong> → <strong>Network tab</strong> → click any request → look at "Headers" and "Response" tabs.</div>
+</div>
+
+<!-- ===================== STATUS CODES ===================== -->
+<div class="section" id="sc">
+  <h2>🚦 HTTP Status Codes — Complete Reference</h2>
+  <p class="subtitle">Every number tells a story about what happened to your request</p>
+
+  <p>Status codes are 3-digit numbers in every HTTP response. The first digit defines the category. There are 5 categories:</p>
+  <div class="diagram">
+    <div class="flow" style="gap:8px;flex-wrap:wrap;">
+      <div class="box green">2xx<br><small>Success</small></div>
+      <div class="box blue">3xx<br><small>Redirect</small></div>
+      <div class="box orange">4xx<br><small>Client Error</small></div>
+      <div class="box purple">5xx<br><small>Server Error</small></div>
+      <div class="box gray">1xx<br><small>Informational</small></div>
+    </div>
+  </div>
+
+  <h3 style="color:#86efac;">✅ 2xx — Success</h3>
+  <div class="status-row" style="background:#0a1f0f;border:1px solid #14532d;border-radius:8px;">
+    <div class="s-badge s2b">200</div>
+    <div class="s-text"><h4 style="color:#86efac;">OK</h4><p>The request succeeded. The response body contains what was requested. Default success for GET requests.</p><span class="use">Example: <code>GET /users/1</code> → <code>200 OK</code> with user data in body</span></div>
+  </div>
+  <div class="status-row" style="background:#0a1f0f;border:1px solid #14532d;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s2b">201</div>
+    <div class="s-text"><h4 style="color:#86efac;">Created</h4><p>A new resource was successfully created. Usually returned after a POST. Often includes a <code>Location</code> header pointing to the new resource.</p><span class="use">Example: <code>POST /users</code> → <code>201 Created</code> + <code>Location: /users/42</code></span></div>
+  </div>
+  <div class="status-row" style="background:#0a1f0f;border:1px solid #14532d;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s2b">204</div>
+    <div class="s-text"><h4 style="color:#86efac;">No Content</h4><p>Request succeeded but there's nothing to return in the body. Common for DELETE or PUT.</p><span class="use">Example: <code>DELETE /posts/5</code> → <code>204 No Content</code></span></div>
+  </div>
+
+  <h3 style="color:#93c5fd;">↪️ 3xx — Redirection</h3>
+  <div class="status-row" style="background:#0f2744;border:1px solid #1e3a5f;border-radius:8px;">
+    <div class="s-badge s3b">301</div>
+    <div class="s-text"><h4 style="color:#93c5fd;">Moved Permanently</h4><p>The resource has permanently moved to a new URL (in the <code>Location</code> header). Browsers update bookmarks. Search engines transfer SEO ranking to new URL.</p><span class="use">Example: Migrating from <code>http://</code> to <code>https://</code></span></div>
+  </div>
+  <div class="status-row" style="background:#0f2744;border:1px solid #1e3a5f;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s3b">302</div>
+    <div class="s-text"><h4 style="color:#93c5fd;">Found (Temporary Redirect)</h4><p>Temporarily at a different URL. Browser uses the original URL for future requests.</p><span class="use">Example: Redirect to login page while not authenticated</span></div>
+  </div>
+  <div class="status-row" style="background:#0f2744;border:1px solid #1e3a5f;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s3b">304</div>
+    <div class="s-text"><h4 style="color:#93c5fd;">Not Modified</h4><p>Used with caching. Client sends <code>If-None-Match</code> or <code>If-Modified-Since</code>, server says "nothing changed, use your cached version." Saves bandwidth.</p></div>
+  </div>
+
+  <h3 style="color:#fdba74;">❌ 4xx — Client Errors (You Did Something Wrong)</h3>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;">
+    <div class="s-badge s4b">400</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Bad Request</h4><p>The server can't understand your request due to invalid syntax, missing required fields, or malformed JSON. Fix your request before retrying.</p></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">401</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Unauthorized</h4><p>You must authenticate first. The response usually includes a <code>WWW-Authenticate</code> header explaining how. Despite the name, it really means "unauthenticated."</p><span class="use">Fix: include a valid <code>Authorization</code> header (token, API key)</span></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">403</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Forbidden</h4><p>You're authenticated but don't have <em>permission</em>. The server understood your request but refuses to fulfill it. Different from 401 — you can't fix it by logging in.</p><span class="use">Example: A regular user trying to access an admin panel</span></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">404</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Not Found</h4><p>The requested resource doesn't exist at this URL. Either the URL is wrong, the resource was deleted, or it never existed. Also used intentionally to hide existence of private resources.</p></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">405</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Method Not Allowed</h4><p>The resource exists but doesn't support that HTTP method. Server includes an <code>Allow</code> header listing valid methods.</p><span class="use">Example: Sending <code>DELETE</code> to an endpoint that only accepts <code>GET</code></span></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">409</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Conflict</h4><p>Request conflicts with current state of the resource.</p><span class="use">Example: Trying to register an email that already exists</span></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">422</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Unprocessable Entity</h4><p>Syntactically correct but semantically wrong. Used in APIs when data is valid JSON but fails business logic validation.</p><span class="use">Example: age field contains -5 (invalid value)</span></div>
+  </div>
+  <div class="status-row" style="background:#2d1200;border:1px solid #7c2d12;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s4b">429</div>
+    <div class="s-text"><h4 style="color:#fdba74;">Too Many Requests</h4><p>You've been rate-limited. The server includes a <code>Retry-After</code> header telling you when to try again. APIs use this to prevent abuse.</p></div>
+  </div>
+
+  <h3 style="color:#c4b5fd;">💥 5xx — Server Errors (Server's Fault)</h3>
+  <div class="status-row" style="background:#1a0f2e;border:1px solid #4c1d95;border-radius:8px;">
+    <div class="s-badge s5b">500</div>
+    <div class="s-text"><h4 style="color:#c4b5fd;">Internal Server Error</h4><p>Generic server crash. An unhandled exception, bug, or unexpected condition on the server. Check server logs. The client did nothing wrong.</p></div>
+  </div>
+  <div class="status-row" style="background:#1a0f2e;border:1px solid #4c1d95;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s5b">502</div>
+    <div class="s-text"><h4 style="color:#c4b5fd;">Bad Gateway</h4><p>A proxy/load balancer got an invalid response from the upstream server. Common in microservice architectures when one service returns garbage.</p></div>
+  </div>
+  <div class="status-row" style="background:#1a0f2e;border:1px solid #4c1d95;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s5b">503</div>
+    <div class="s-text"><h4 style="color:#c4b5fd;">Service Unavailable</h4><p>Server is temporarily down — overloaded or under maintenance. Try again later. Often includes a <code>Retry-After</code> header.</p></div>
+  </div>
+  <div class="status-row" style="background:#1a0f2e;border:1px solid #4c1d95;border-radius:8px;margin-top:6px;">
+    <div class="s-badge s5b">504</div>
+    <div class="s-text"><h4 style="color:#c4b5fd;">Gateway Timeout</h4><p>A proxy waited too long for the upstream server to respond. The upstream server is too slow or unreachable.</p></div>
+  </div>
+
+  <div class="success">✅ Quick memory rule: <strong>2xx = It worked · 3xx = Go somewhere else · 4xx = You messed up · 5xx = Server messed up</strong></div>
+</div>
+
+<!-- ===================== HEADERS ===================== -->
+<div class="section" id="hd">
+  <h2>📋 HTTP Headers — Deep Dive</h2>
+  <p class="subtitle">The metadata envelope around every HTTP message</p>
+
+  <h3>What Are Headers?</h3>
+  <p>Headers are <strong>key-value pairs</strong> sent with every HTTP request and response. They carry metadata — information <em>about</em> the message — such as content type, authentication, caching instructions, encoding, and more. Headers are invisible to end users but essential for developers.</p>
+  <div class="code-block">
+Header-Name: header-value<br>
+<span class="hl-c">Note: header names are case-insensitive, values may be case-sensitive</span>
+  </div>
+
+  <h3>Request Headers (sent by client)</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Header</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>Host</code></td><td>The domain being requested. Required in HTTP/1.1 — allows one server to host many domains (virtual hosting).</td><td><code>Host: api.example.com</code></td></tr>
+    <tr><td><code>Accept</code></td><td>Tells server what content types the client can handle, with optional quality weights.</td><td><code>Accept: text/html,application/json;q=0.9</code></td></tr>
+    <tr><td><code>Accept-Language</code></td><td>Preferred languages for the response.</td><td><code>Accept-Language: en-US,en;q=0.8</code></td></tr>
+    <tr><td><code>Accept-Encoding</code></td><td>Compression formats the client supports.</td><td><code>Accept-Encoding: gzip, deflate, br</code></td></tr>
+    <tr><td><code>Authorization</code></td><td>Credentials to authenticate the request.</td><td><code>Authorization: Bearer eyJhbGc...</code></td></tr>
+    <tr><td><code>Cookie</code></td><td>Previously set cookies returned to the server.</td><td><code>Cookie: session=abc; theme=dark</code></td></tr>
+    <tr><td><code>User-Agent</code></td><td>Identifies browser/client software and version.</td><td><code>User-Agent: Mozilla/5.0 (Win...)</code></td></tr>
+    <tr><td><code>Referer</code></td><td>URL of the page that sent this request (where you came from).</td><td><code>Referer: https://google.com</code></td></tr>
+    <tr><td><code>Content-Type</code></td><td>Format of the request body (for POST/PUT/PATCH).</td><td><code>Content-Type: application/json</code></td></tr>
+    <tr><td><code>Content-Length</code></td><td>Size of the request body in bytes.</td><td><code>Content-Length: 128</code></td></tr>
+    <tr><td><code>If-None-Match</code></td><td>Caching: send cached ETag, only respond if resource changed.</td><td><code>If-None-Match: "abc123"</code></td></tr>
+    <tr><td><code>If-Modified-Since</code></td><td>Caching: only return if resource changed after this date.</td><td><code>If-Modified-Since: Mon, 1 Jan 2026 00:00:00 GMT</code></td></tr>
+    <tr><td><code>Origin</code></td><td>Where the request originated from (used in CORS).</td><td><code>Origin: https://myapp.com</code></td></tr>
+  </table></div>
+
+  <h3>Response Headers (sent by server)</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Header</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>Content-Type</code></td><td>The format of the response body.</td><td><code>Content-Type: application/json; charset=utf-8</code></td></tr>
+    <tr><td><code>Content-Length</code></td><td>Size of response body in bytes.</td><td><code>Content-Length: 2048</code></td></tr>
+    <tr><td><code>Content-Encoding</code></td><td>Compression used on the body (client must decompress).</td><td><code>Content-Encoding: gzip</code></td></tr>
+    <tr><td><code>Set-Cookie</code></td><td>Instructs browser to store a cookie.</td><td><code>Set-Cookie: session=x1y2; HttpOnly; Secure</code></td></tr>
+    <tr><td><code>Location</code></td><td>URL to redirect to (used with 3xx responses).</td><td><code>Location: https://new.example.com/page</code></td></tr>
+    <tr><td><code>Cache-Control</code></td><td>Caching rules for this response.</td><td><code>Cache-Control: max-age=3600, public</code></td></tr>
+    <tr><td><code>ETag</code></td><td>A unique identifier for the resource version (used in caching).</td><td><code>ETag: "abc123def456"</code></td></tr>
+    <tr><td><code>Last-Modified</code></td><td>When the resource was last changed.</td><td><code>Last-Modified: Wed, 1 Apr 2026 12:00:00 GMT</code></td></tr>
+    <tr><td><code>Server</code></td><td>Identifies the server software (often hidden for security).</td><td><code>Server: nginx/1.25.0</code></td></tr>
+    <tr><td><code>Retry-After</code></td><td>When to retry after 429 or 503 response.</td><td><code>Retry-After: 60</code></td></tr>
+    <tr><td><code>WWW-Authenticate</code></td><td>How to authenticate (sent with 401).</td><td><code>WWW-Authenticate: Bearer realm="api"</code></td></tr>
+    <tr><td><code>Access-Control-Allow-Origin</code></td><td>CORS: which origins can access this resource.</td><td><code>Access-Control-Allow-Origin: *</code></td></tr>
+    <tr><td><code>Strict-Transport-Security</code></td><td>Force HTTPS for this domain (HSTS).</td><td><code>Strict-Transport-Security: max-age=31536000</code></td></tr>
+    <tr><td><code>X-Content-Type-Options</code></td><td>Security: prevent MIME sniffing.</td><td><code>X-Content-Type-Options: nosniff</code></td></tr>
+  </table></div>
+
+  <h3>Cache-Control Values Explained</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Value</th><th>Meaning</th></tr>
+    <tr><td><code>max-age=3600</code></td><td>Cache for 3600 seconds (1 hour)</td></tr>
+    <tr><td><code>no-cache</code></td><td>Must revalidate with server before using cache</td></tr>
+    <tr><td><code>no-store</code></td><td>Don't cache at all — used for sensitive data</td></tr>
+    <tr><td><code>public</code></td><td>Can be cached by shared caches (CDNs)</td></tr>
+    <tr><td><code>private</code></td><td>Only cached by the browser, not shared caches</td></tr>
+    <tr><td><code>must-revalidate</code></td><td>Don't use stale cache without revalidating</td></tr>
+  </table></div>
+
+  <h3>Cookie Flags (in Set-Cookie)</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Flag</th><th>Meaning</th></tr>
+    <tr><td><code>HttpOnly</code></td><td>Cookie inaccessible to JavaScript (prevents XSS attacks)</td></tr>
+    <tr><td><code>Secure</code></td><td>Cookie only sent over HTTPS connections</td></tr>
+    <tr><td><code>SameSite=Strict</code></td><td>Cookie not sent with cross-site requests (prevents CSRF)</td></tr>
+    <tr><td><code>Expires</code></td><td>When the cookie expires (if not set, expires when browser closes)</td></tr>
+    <tr><td><code>Path=/api</code></td><td>Cookie only sent for requests to <code>/api</code> path</td></tr>
+  </table></div>
+
+  <h3>CORS Headers</h3>
+  <p><strong>CORS (Cross-Origin Resource Sharing)</strong> is a browser security mechanism. By default, a webpage at <code>myapp.com</code> cannot make API calls to <code>api.other.com</code>. The server must explicitly allow it with CORS headers.</p>
+  <div class="code-block">
+<span class="hl-c">━ SERVER RESPONSE HEADERS (allow cross-origin access) ━</span><br>
+<span class="hl-h">Access-Control-Allow-Origin:</span> <span class="hl-v">https://myapp.com</span><br>
+<span class="hl-h">Access-Control-Allow-Methods:</span> <span class="hl-v">GET, POST, PUT, DELETE</span><br>
+<span class="hl-h">Access-Control-Allow-Headers:</span> <span class="hl-v">Content-Type, Authorization</span><br>
+<span class="hl-h">Access-Control-Max-Age:</span> <span class="hl-v">86400</span>
+  </div>
+
+  <div class="tip">💡 <strong>DevTools Tip:</strong> Open Chrome DevTools (F12) → Network tab → click any request → you can see all request and response headers. This is how developers debug API issues in real life.</div>
+</div>
+
+</div><!-- content -->
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const ids=['cs','tcp','http','rr','sc','hd'];
+  document.querySelectorAll('.nav-btn')[ids.indexOf(id)].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

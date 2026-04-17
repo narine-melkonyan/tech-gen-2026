@@ -15,9 +15,7 @@
     </style>
 </head>
 <body>
-<script src="/layout.js"></script>
 <div id="root"></div>
-
 <script type="text/babel">
     const { useState } = React;
 
@@ -32,7 +30,7 @@
     const GRAY = "#444";
     const BORDER = "#ddd";
 
-    const tabs = ["Basic Model", "Request Flow", "Multi-tier", "Real World", "QA View"];
+    const tabs = ["Basic Model", "URL Journey", "Request Flow", "Ports", "Stateless HTTP", "CS vs P2P", "Multi-tier", "Real World", "QA View"];
 
     function Section({ title, color = GREEN, children }) {
         return (
@@ -129,6 +127,123 @@
         );
     }
 
+    function UrlJourney() {
+        const [step, setStep] = useState(0);
+        const steps = [
+            {
+                label: "Type URL & Press Enter", icon: "⌨️", phase: "Client",
+                color: BLUE, bg: BLUE_LIGHT,
+                desc: "You type https://www.example.com/products?id=42 and press Enter.",
+                detail: "The browser parses the URL into parts:\n  • Scheme:  https\n  • Host:    www.example.com\n  • Path:    /products\n  • Query:   ?id=42\n\nThe browser checks if it already has a cached IP for this domain."
+            },
+            {
+                label: "DNS Resolution", icon: "🔍", phase: "Network",
+                color: AMBER, bg: AMBER_LIGHT,
+                desc: "Browser needs the IP address of www.example.com.",
+                detail: "DNS lookup order:\n  1. Browser cache (checked first)\n  2. OS cache / hosts file\n  3. Router cache\n  4. Recursive resolver (your ISP)\n  5. Root nameserver → .com TLD server\n  6. Authoritative nameserver for example.com\n\nResult: 93.184.216.34\nThis entire lookup often takes < 10ms."
+            },
+            {
+                label: "TCP Connection", icon: "🤝", phase: "Network",
+                color: AMBER, bg: AMBER_LIGHT,
+                desc: "Browser opens a TCP connection to port 443 on 93.184.216.34.",
+                detail: "3-Way Handshake:\n  Client → SYN         (seq=1000)\n  Server → SYN-ACK     (seq=2000, ack=1001)\n  Client → ACK         (ack=2001)\n\nTCP connection established.\nPort 443 = HTTPS. Port 80 = HTTP."
+            },
+            {
+                label: "TLS Handshake", icon: "🔐", phase: "Security",
+                color: "#5b21b6", bg: "#ede9fe",
+                desc: "Browser and server negotiate encryption (TLS 1.3).",
+                detail: "TLS 1.3 Handshake:\n  1. Client Hello — TLS version, cipher suites, random\n  2. Server Hello — chosen cipher, certificate, public key\n  3. Client validates certificate (signed by trusted CA?)\n  4. Both derive session keys using ECDHE key exchange\n  5. Finished messages exchanged\n\nAll further data is now encrypted. Takes ~1 round trip in TLS 1.3."
+            },
+            {
+                label: "HTTP Request Sent", icon: "📤", phase: "Client",
+                color: BLUE, bg: BLUE_LIGHT,
+                desc: "Browser sends the encrypted HTTP GET request to the server.",
+                detail: "GET /products?id=42 HTTP/2\nHost: www.example.com\nAccept: text/html,application/xhtml+xml\nAccept-Language: en-US,en;q=0.9\nAccept-Encoding: gzip, deflate, br\nUser-Agent: Mozilla/5.0 ...\nCookie: session=abc123\n\n(no body — GET has no body)"
+            },
+            {
+                label: "Server Processing", icon: "⚙️", phase: "Server",
+                color: GREEN, bg: GREEN_LIGHT,
+                desc: "Server decrypts, parses, and processes the request.",
+                detail: "Server steps:\n  1. Decrypt the request\n  2. Parse method, path, headers, body\n  3. Authenticate (validate session cookie)\n  4. Route to the correct handler\n  5. Query database: SELECT * FROM products WHERE id = 42\n  6. Build HTML/JSON response\n  7. Set response headers (Content-Type, Cache-Control, etc.)\n  8. Encrypt and send response"
+            },
+            {
+                label: "HTTP Response", icon: "📥", phase: "Server",
+                color: GREEN, bg: GREEN_LIGHT,
+                desc: "Server sends back status code, headers, and the response body.",
+                detail: "HTTP/2 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Encoding: gzip\nCache-Control: max-age=3600\nETag: \"abc123\"\nSet-Cookie: viewed=42; Path=/; HttpOnly\n\n<html>...(compressed HTML body)...</html>"
+            },
+            {
+                label: "Browser Parses HTML", icon: "🧩", phase: "Client",
+                color: BLUE, bg: BLUE_LIGHT,
+                desc: "Browser receives the response and starts building the page.",
+                detail: "Browser parsing steps:\n  1. Parse HTML → build DOM tree\n  2. Parse CSS → build CSSOM tree\n  3. Combine → Render tree\n  4. Sub-resources discovered: <img>, <script>, <link>\n  5. Browser fires additional HTTP requests for each\n     (images, CSS files, JS files — often in parallel)\n  6. JS is parsed and executed"
+            },
+            {
+                label: "Page Renders", icon: "🖼️", phase: "Client",
+                color: BLUE, bg: BLUE_LIGHT,
+                desc: "User sees the finished page. The full round-trip is complete.",
+                detail: "Rendering pipeline:\n  1. Layout (Reflow) — calculate positions and sizes\n  2. Paint — draw pixels for each element\n  3. Composite — layers merged on GPU\n\nThe connection stays open (HTTP/2 multiplexing).\nFuture requests reuse the same TCP+TLS connection.\nTotal time (typical): 200ms – 2s"
+            },
+        ];
+
+        const phaseColor = { Client: BLUE, Network: AMBER, Security: "#5b21b6", Server: GREEN };
+        const phaseBg = { Client: BLUE_LIGHT, Network: AMBER_LIGHT, Security: "#ede9fe", Server: GREEN_LIGHT };
+
+        return (
+            <div>
+                <Section title="Full URL Journey: What Happens When You Press Enter">
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+                        {steps.map((s, i) => (
+                            <button key={i} onClick={() => setStep(i)} style={{ padding: "6px 12px", borderRadius: 20, border: `1.5px solid ${step === i ? s.color : BORDER}`, background: step === i ? s.bg : "#fff", color: step === i ? s.color : GRAY, fontSize: 11, fontWeight: step === i ? 700 : 400, fontFamily: "Arial, sans-serif" }}>
+                                {i + 1}. {s.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div style={{ background: steps[step].bg, border: `2px solid ${steps[step].color}`, borderRadius: 10, padding: 18, marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                            <span style={{ fontSize: 36 }}>{steps[step].icon}</span>
+                            <div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: steps[step].color, fontFamily: "Arial, sans-serif", letterSpacing: 1 }}>{steps[step].phase.toUpperCase()} PHASE</div>
+                                <div style={{ fontWeight: 700, fontSize: 15, color: steps[step].color, fontFamily: "Georgia, serif" }}>Step {step + 1}: {steps[step].label}</div>
+                            </div>
+                        </div>
+                        <p style={{ margin: "0 0 12px", fontSize: 13, color: GRAY, fontFamily: "Arial, sans-serif" }}>{steps[step].desc}</p>
+                        <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 6, padding: 14, fontSize: 12, color: "#333", fontFamily: "monospace", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{steps[step].detail}</div>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${BORDER}`, background: "#fff", opacity: step === 0 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12 }}>← Previous</button>
+                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", alignSelf: "center" }}>{step + 1} / {steps.length}</span>
+                        <button onClick={() => setStep(Math.min(steps.length - 1, step + 1))} disabled={step === steps.length - 1} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${GREEN}`, background: GREEN_LIGHT, color: GREEN, opacity: step === steps.length - 1 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700 }}>Next →</button>
+                    </div>
+                </Section>
+
+                <Section title="Visual Timeline" color={AMBER}>
+                    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden" }}>
+                        {[
+                            { phase: "DNS", time: "~5–50 ms", color: AMBER, bg: AMBER_LIGHT },
+                            { phase: "TCP Handshake", time: "~20–100 ms (1 RTT)", color: AMBER, bg: AMBER_LIGHT },
+                            { phase: "TLS Handshake", time: "~20–100 ms (1 RTT in TLS 1.3)", color: "#5b21b6", bg: "#ede9fe" },
+                            { phase: "HTTP Request + Server Processing", time: "~50–500 ms", color: GREEN, bg: GREEN_LIGHT },
+                            { phase: "HTML Download", time: "~10–200 ms", color: BLUE, bg: BLUE_LIGHT },
+                            { phase: "Sub-resources (CSS, JS, images)", time: "~100–1000 ms (parallel)", color: BLUE, bg: BLUE_LIGHT },
+                            { phase: "Render & Paint", time: "~10–100 ms", color: BLUE, bg: BLUE_LIGHT },
+                        ].map((row, i) => (
+                            <div key={i} style={{ display: "flex", borderBottom: i < 6 ? `1px solid ${BORDER}` : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                                <div style={{ width: 12, background: row.bg, borderRight: `2px solid ${row.color}`, flexShrink: 0 }} />
+                                <div style={{ padding: "10px 14px", flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: row.color, fontFamily: "Arial, sans-serif" }}>{row.phase}</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "monospace" }}>{row.time}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
     function RequestFlow() {
         const [step, setStep] = useState(0);
         const steps = [
@@ -170,6 +285,246 @@
                     <button onClick={() => setStep(Math.min(steps.length - 1, step + 1))} disabled={step === steps.length - 1} style={{ padding: "8px 16px", borderRadius: 6, border: `1px solid ${GREEN}`, background: GREEN_LIGHT, color: GREEN, opacity: step === steps.length - 1 ? 0.4 : 1, fontFamily: "Arial, sans-serif", fontSize: 12, fontWeight: 700 }}>Next →</button>
                 </div>
             </Section>
+        );
+    }
+
+    function Ports() {
+        const ranges = [
+            { range: "0 – 1023", name: "Well-Known Ports", desc: "Reserved for standard protocols. Requires root/admin to bind.", color: RED, bg: RED_LIGHT },
+            { range: "1024 – 49151", name: "Registered Ports", desc: "Assigned to specific apps by IANA. Common for databases and dev tools.", color: AMBER, bg: AMBER_LIGHT },
+            { range: "49152 – 65535", name: "Dynamic / Ephemeral Ports", desc: "Assigned automatically by OS for outgoing connections.", color: GREEN, bg: GREEN_LIGHT },
+        ];
+
+        const ports = [
+            { port: 21, proto: "FTP", use: "File Transfer (control)", color: AMBER },
+            { port: 22, proto: "SSH", use: "Secure Shell (encrypted terminal)", color: GREEN },
+            { port: 25, proto: "SMTP", use: "Email sending", color: AMBER },
+            { port: 53, proto: "DNS", use: "Domain Name resolution (UDP+TCP)", color: AMBER },
+            { port: 80, proto: "HTTP", use: "Web traffic (unencrypted)", color: BLUE },
+            { port: 110, proto: "POP3", use: "Email retrieval (download & delete)", color: AMBER },
+            { port: 143, proto: "IMAP", use: "Email retrieval (sync, keep on server)", color: AMBER },
+            { port: 443, proto: "HTTPS", use: "Web traffic (encrypted, TLS)", color: GREEN },
+            { port: 3000, proto: "Node.js dev", use: "Common Express dev server default", color: BLUE },
+            { port: 3306, proto: "MySQL", use: "MySQL database", color: AMBER },
+            { port: 5432, proto: "PostgreSQL", use: "PostgreSQL database", color: AMBER },
+            { port: 6379, proto: "Redis", use: "Redis in-memory store", color: RED },
+            { port: 8080, proto: "HTTP alt", use: "Alternative HTTP, dev proxies", color: BLUE },
+            { port: 27017, proto: "MongoDB", use: "MongoDB database", color: GREEN },
+        ];
+
+        return (
+            <div>
+                <Section title="Port Number Ranges">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+                        {ranges.map(r => (
+                            <div key={r.range} style={{ background: r.bg, border: `1.5px solid ${r.color}`, borderRadius: 8, padding: "12px 16px", display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+                                <div style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, color: r.color, minWidth: 140 }}>{r.range}</div>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: 13, color: r.color, fontFamily: "Arial, sans-serif" }}>{r.name}</div>
+                                    <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 2 }}>{r.desc}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="Common Port Numbers" color={BLUE}>
+                    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "80px 160px 1fr", background: "#f0f0f0", padding: "8px 14px", borderBottom: `1px solid ${BORDER}` }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: GRAY, textTransform: "uppercase", letterSpacing: 0.5 }}>Port</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: GRAY, textTransform: "uppercase", letterSpacing: 0.5 }}>Protocol</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: GRAY, textTransform: "uppercase", letterSpacing: 0.5 }}>Common Use</div>
+                        </div>
+                        {ports.map((p, i) => (
+                            <div key={p.port} style={{ display: "grid", gridTemplateColumns: "80px 160px 1fr", padding: "9px 14px", borderBottom: i < ports.length - 1 ? `1px solid ${BORDER}` : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                                <div style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: p.color }}>{p.port}</div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: p.color, fontFamily: "Arial, sans-serif" }}>{p.proto}</div>
+                                <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p.use}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ marginTop: 10, fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", background: "#f9f9f9", padding: 12, borderRadius: 8, border: `1px solid ${BORDER}` }}>
+                        💡 A server listens on a port. A client connects to IP:Port. Two services cannot share the same port on the same IP (you'll get "EADDRINUSE" error in Node.js).
+                    </div>
+                </Section>
+            </div>
+        );
+    }
+
+    function StatelessHttp() {
+        return (
+            <div>
+                <Section title="What Does Stateless Mean?">
+                    <div style={{ background: "#f9f9f9", border: `1px solid ${BORDER}`, borderRadius: 10, padding: 20, marginBottom: 16 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: GREEN, fontFamily: "Georgia, serif", marginBottom: 10 }}>
+                            Each HTTP request is completely independent.
+                        </div>
+                        <div style={{ fontSize: 13, color: GRAY, fontFamily: "Arial, sans-serif", lineHeight: 1.7 }}>
+                            The server does <strong>not</strong> remember anything about previous requests. Every request must carry all the information the server needs to respond. The server treats every request as if it's the first time it has ever seen you.
+                        </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                        <div style={{ background: GREEN_LIGHT, border: `1.5px solid ${GREEN}`, borderRadius: 8, padding: 14 }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, color: GREEN, marginBottom: 8, fontFamily: "Arial, sans-serif" }}>✓ ADVANTAGES</div>
+                            {["Server is simpler — no session memory needed", "Scales horizontally — any server can handle any request", "Easier to recover from crashes (no lost session state)", "Requests can be cached independently"].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                    <span style={{ color: GREEN, fontWeight: 700, fontSize: 11 }}>•</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ background: RED_LIGHT, border: `1.5px solid ${RED}`, borderRadius: 8, padding: 14 }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, color: RED, marginBottom: 8, fontFamily: "Arial, sans-serif" }}>✗ CHALLENGES</div>
+                            {["Client must send credentials/token with every request", "More data per request (repeated headers)", "Implementing 'who is logged in?' requires extra mechanism", "Shopping cart, user prefs require external state storage"].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                                    <span style={{ color: RED, fontWeight: 700, fontSize: 11 }}>•</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Section title="How Apps Fake State" color={AMBER}>
+                    <div style={{ fontSize: 13, color: GRAY, marginBottom: 14, fontFamily: "Arial, sans-serif" }}>
+                        Since HTTP is stateless, apps store state <em>outside</em> the protocol:
+                    </div>
+                    {[
+                        {
+                            icon: "🍪", name: "Cookies",
+                            how: "Server sends Set-Cookie header. Browser stores it and sends it back on every subsequent request to that domain.",
+                            example: "Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax",
+                            pro: "Automatic — browser handles it", con: "Vulnerable to CSRF if not configured correctly"
+                        },
+                        {
+                            icon: "🗂️", name: "Server-Side Sessions",
+                            how: "Server stores user data in memory/DB, gives client a session ID (usually via cookie). Server looks up session ID on each request.",
+                            example: "Cookie: session_id=abc123  →  server looks up sessions[abc123]",
+                            pro: "State on server, ID on client", con: "Doesn't scale across multiple servers without shared store (Redis)"
+                        },
+                        {
+                            icon: "🔑", name: "JWT (JSON Web Token)",
+                            how: "Server creates a signed token containing user data. Client stores it (localStorage or cookie) and sends it in the Authorization header.",
+                            example: "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjF9.abc",
+                            pro: "Stateless — server verifies signature, no DB lookup", con: "Token cannot be invalidated until it expires (unless using blocklist)"
+                        },
+                        {
+                            icon: "🗄️", name: "Database / Cache",
+                            how: "State (cart, preferences, history) stored in DB or Redis. Client sends user ID with each request; server fetches fresh state.",
+                            example: "GET /cart  with  Authorization: Bearer <token>  → DB: SELECT * FROM carts WHERE user_id = 5",
+                            pro: "Durable, persistent across devices", con: "Extra DB query per request"
+                        },
+                    ].map(m => (
+                        <div key={m.name} style={{ border: `1px solid ${BORDER}`, borderRadius: 10, padding: 16, marginBottom: 12, background: "#fff" }}>
+                            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+                                <span style={{ fontSize: 22 }}>{m.icon}</span>
+                                <span style={{ fontWeight: 700, fontSize: 14, color: GREEN, fontFamily: "Georgia, serif" }}>{m.name}</span>
+                            </div>
+                            <p style={{ fontSize: 12, color: GRAY, marginBottom: 8, fontFamily: "Arial, sans-serif", lineHeight: 1.6 }}>{m.how}</p>
+                            <div style={{ background: "#f4f4f4", borderRadius: 6, padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: "#333", marginBottom: 8 }}>{m.example}</div>
+                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                                <span style={{ fontSize: 11, background: GREEN_LIGHT, color: GREEN, padding: "2px 8px", borderRadius: 4, fontFamily: "Arial, sans-serif" }}>✓ {m.pro}</span>
+                                <span style={{ fontSize: 11, background: RED_LIGHT, color: RED, padding: "2px 8px", borderRadius: 4, fontFamily: "Arial, sans-serif" }}>✗ {m.con}</span>
+                            </div>
+                        </div>
+                    ))}
+                </Section>
+            </div>
+        );
+    }
+
+    function CsVsP2p() {
+        return (
+            <div>
+                <Section title="Client-Server vs Peer-to-Peer (P2P)">
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                        <div style={{ background: BLUE_LIGHT, border: `2px solid ${BLUE}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ textAlign: "center", marginBottom: 12 }}>
+                                <div style={{ fontSize: 36 }}>🖥️→💻</div>
+                                <div style={{ fontWeight: 700, fontSize: 15, color: BLUE, fontFamily: "Georgia, serif" }}>Client-Server</div>
+                                <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 4 }}>Centralized authority</div>
+                            </div>
+                            {[
+                                "One server serves many clients",
+                                "Server is always online, clients come and go",
+                                "Server owns and controls data",
+                                "Clients never communicate directly",
+                                "Easy to secure and manage",
+                                "Single point of failure (server down = all down)",
+                                "Requires dedicated infrastructure",
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                                    <span style={{ color: BLUE, fontWeight: 700, fontSize: 11 }}>•</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ background: GREEN_LIGHT, border: `2px solid ${GREEN}`, borderRadius: 10, padding: 16 }}>
+                            <div style={{ textAlign: "center", marginBottom: 12 }}>
+                                <div style={{ fontSize: 36 }}>💻↔💻</div>
+                                <div style={{ fontWeight: 700, fontSize: 15, color: GREEN, fontFamily: "Georgia, serif" }}>Peer-to-Peer (P2P)</div>
+                                <div style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif", marginTop: 4 }}>Decentralized network</div>
+                            </div>
+                            {[
+                                "Every node is both client AND server",
+                                "Nodes communicate directly with each other",
+                                "No central authority or single point of failure",
+                                "Data is distributed across all peers",
+                                "Scales naturally as more nodes join",
+                                "Harder to secure and moderate",
+                                "No infrastructure cost (each peer contributes)",
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                                    <span style={{ color: GREEN, fontWeight: 700, fontSize: 11 }}>•</span>
+                                    <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{p}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Section title="Comparison Table" color={AMBER}>
+                    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden" }}>
+                        {[
+                            { aspect: "Architecture", cs: "Centralized", p2p: "Decentralized" },
+                            { aspect: "Roles", cs: "Fixed: Client requests, Server responds", p2p: "Each peer does both" },
+                            { aspect: "Scalability", cs: "Server must scale up (cost $$$)", p2p: "Scales with more peers (free)" },
+                            { aspect: "Availability", cs: "Down when server is down", p2p: "No single point of failure" },
+                            { aspect: "Security", cs: "Easy — central control, auth, logging", p2p: "Hard — no trusted authority" },
+                            { aspect: "Performance", cs: "Bottleneck at server under high load", p2p: "Distributed load, can be faster for file sharing" },
+                            { aspect: "Data consistency", cs: "Easy — single source of truth", p2p: "Hard — data scattered, sync issues" },
+                            { aspect: "Examples", cs: "Google, Facebook, any REST API, Netflix", p2p: "BitTorrent, Bitcoin, Tor, Skype (early)" },
+                            { aspect: "QA approach", cs: "Test API endpoints, auth, error handling", p2p: "Test node discovery, data sync, fault tolerance" },
+                        ].map((row, i) => (
+                            <div key={i} style={{ display: "grid", gridTemplateColumns: "160px 1fr 1fr", borderBottom: i < 8 ? `1px solid ${BORDER}` : "none", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                                <div style={{ padding: "10px 14px", fontSize: 12, fontWeight: 700, color: AMBER, fontFamily: "Arial, sans-serif", borderRight: `1px solid ${BORDER}` }}>{row.aspect}</div>
+                                <div style={{ padding: "10px 14px", fontSize: 12, color: BLUE, fontFamily: "Arial, sans-serif", borderRight: `1px solid ${BORDER}` }}>{row.cs}</div>
+                                <div style={{ padding: "10px 14px", fontSize: 12, color: GREEN, fontFamily: "Arial, sans-serif" }}>{row.p2p}</div>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                <Section title="Real-World Examples" color={BLUE}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {[
+                            { title: "Client-Server apps you use daily", items: ["Google Search — your browser → Google servers", "Instagram — app → Meta's API servers", "GitHub — browser → GitHub servers", "Netflix — app → Netflix CDN + API", "This app — browser → Node.js Express server"], color: BLUE, bg: BLUE_LIGHT },
+                            { title: "P2P systems you may know", items: ["BitTorrent — peers share file chunks directly", "Bitcoin — nodes validate transactions together", "WebRTC video calls — browser to browser directly", "Tor — encrypted relay through volunteer nodes", "Blockchain networks — fully distributed ledger"], color: GREEN, bg: GREEN_LIGHT },
+                        ].map(({ title, items, color, bg }) => (
+                            <div key={title} style={{ background: bg, border: `1.5px solid ${color}`, borderRadius: 8, padding: 14 }}>
+                                <div style={{ fontWeight: 700, fontSize: 12, color, marginBottom: 10, fontFamily: "Arial, sans-serif" }}>{title}</div>
+                                {items.map((item, i) => (
+                                    <div key={i} style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                                        <span style={{ color, fontSize: 11 }}>→</span>
+                                        <span style={{ fontSize: 12, color: GRAY, fontFamily: "Arial, sans-serif" }}>{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            </div>
         );
     }
 
@@ -304,7 +659,7 @@
         );
     }
 
-    const views = [BasicModel, RequestFlow, MultiTier, RealWorld, QAView];
+    const views = [BasicModel, UrlJourney, RequestFlow, Ports, StatelessHttp, CsVsP2p, MultiTier, RealWorld, QAView];
 
     function App() {
         const [tab, setTab] = useState(0);
@@ -329,7 +684,5 @@
 
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
-
-
 </body>
 </html>
