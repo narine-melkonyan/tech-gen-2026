@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Design Techniques — Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0c0d0f;
+  --surface:   #131416;
+  --card:      #1a1c1f;
+  --border:    #2a2d31;
+  --text:      #f0ede8;
+  --muted:     #6b6f76;
+  --accent:    #06b6d4;
+  --accent-dim:#042030;
+  --green:     #22c55e;
+  --green-dim: #0a2010;
+  --red:       #ef4444;
+  --red-dim:   #200a0a;
+  --amber:     #f59e0b;
+  --amber-dim: #2d1b00;
+  --purple:    #a78bfa;
+  --purple-dim:#1a0f3d;
+  --pink:      #f472b6;
+  --pink-dim:  #2d0a1f;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --r: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(6,182,212,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,182,212,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+/* LAYOUT */
+.shell { position: relative; z-index: 1; display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+.brand-wrap { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
+.brand-dot-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.bdot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.brand-label { font-family: var(--font-head); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.brand-title { font-family: var(--font-head); font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+.brand-title span { color: var(--accent); }
+.nav-section { padding: 18px 16px 8px; }
+.nav-section-label { font-size: 0.67rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0 8px; margin-bottom: 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 0.84rem; color: var(--muted); cursor: pointer; transition: all 0.18s; margin-bottom: 2px; border: 1px solid transparent; }
+.nav-item:hover { background: var(--card); color: var(--text); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(6,182,212,0.2); font-weight: 500; }
+.nav-num { font-family: var(--font-mono); font-size: 0.7rem; width: 18px; text-align: center; flex-shrink: 0; }
+.sidebar-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+
+/* MAIN */
+.main { padding: 40px 48px; max-width: 880px; }
+.page-header { margin-bottom: 32px; }
+.page-header h1 { font-family: var(--font-head); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.page-header h1 span { color: var(--accent); }
+.page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+h2 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+h3 { font-family: var(--font-head); font-size: 0.9rem; font-weight: 700; color: var(--accent); margin: 22px 0 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+p { color: #94a3b8; font-size: 0.88rem; line-height: 1.7; margin-bottom: 10px; }
+ul, ol { color: #94a3b8; font-size: 0.88rem; line-height: 1.85; padding-left: 20px; margin-bottom: 10px; }
+li { margin-bottom: 3px; }
+code { font-family: var(--font-mono); font-size: 0.8rem; background: var(--card); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+strong { color: var(--text); font-weight: 600; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin-bottom: 14px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+.tip    { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #67e8f9; line-height: 1.65; }
+.warn   { background: var(--amber-dim);  border-left: 3px solid var(--amber);  padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #fcd34d; line-height: 1.65; }
+.success{ background: var(--green-dim);  border-left: 3px solid var(--green);  padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #86efac; line-height: 1.65; }
+.danger { background: var(--red-dim);    border-left: 3px solid var(--red);    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #fca5a5; line-height: 1.65; }
+
+.badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; font-family: var(--font-mono); }
+.b-green  { background: var(--green-dim);  color: var(--green); }
+.b-red    { background: var(--red-dim);    color: var(--red); }
+.b-amber  { background: var(--amber-dim);  color: var(--amber); }
+.b-cyan   { background: var(--accent-dim); color: var(--accent); }
+.b-purple { background: var(--purple-dim); color: var(--purple); }
+.b-gray   { background: var(--card);       color: var(--muted); }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; }
+th { background: var(--accent-dim); color: var(--accent); padding: 10px 14px; text-align: left; font-size: 0.8rem; font-weight: 600; font-family: var(--font-head); letter-spacing: 0.04em; }
+td { padding: 10px 14px; font-size: 0.83rem; border-bottom: 1px solid var(--border); vertical-align: top; color: #cbd5e1; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #131416; }
+td.pass  { color: var(--green); font-weight: 600; }
+td.fail  { color: var(--red); font-weight: 600; }
+td.valid { background: var(--green-dim); color: var(--green); text-align: center; font-weight: 600; }
+td.invalid { background: var(--red-dim); color: var(--red); text-align: center; font-weight: 600; }
+td.center { text-align: center; }
+td.mono { font-family: var(--font-mono); font-size: 0.78rem; }
+
+/* PARTITION VISUALIZER */
+.partition-bar { height: 54px; border-radius: 8px; overflow: hidden; display: flex; margin: 14px 0; border: 1px solid var(--border); }
+.part { display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 0.72rem; font-weight: 600; padding: 4px; text-align: center; cursor: pointer; transition: filter 0.18s; }
+.part:hover { filter: brightness(1.15); }
+.part-invalid-left  { background: var(--red-dim);    color: var(--red);    flex: 1; }
+.part-valid         { background: var(--green-dim);  color: var(--green);  flex: 2; }
+.part-invalid-right { background: var(--red-dim);    color: var(--red);    flex: 1; }
+
+/* BOUNDARY NUMBER LINE */
+.numline-wrap { position: relative; margin: 28px 0 36px; }
+.numline { height: 4px; background: var(--border); border-radius: 2px; position: relative; }
+.numline-fill { position: absolute; top: 0; bottom: 0; background: var(--green); border-radius: 2px; }
+.boundary-point { position: absolute; top: -10px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.bp-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; border: 2px solid; transition: transform 0.15s; }
+.bp-dot:hover { transform: scale(1.2); }
+.bp-label { font-family: var(--font-mono); font-size: 0.68rem; white-space: nowrap; }
+.bp-below { margin-top: 30px; font-size: 0.7rem; color: var(--muted); text-align: center; }
+
+/* INTERACTIVE INPUT TESTER */
+.tester-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin: 14px 0; }
+.tester-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.tester-input { flex: 1; background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: var(--font-mono); font-size: 0.88rem; outline: none; transition: border-color 0.18s; }
+.tester-input:focus { border-color: var(--accent); }
+.tester-input.ok  { border-color: var(--green); }
+.tester-input.err { border-color: var(--red); }
+.tester-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--accent); color: #050810; font-family: var(--font-head); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+.tester-btn:hover { opacity: 0.85; }
+.result-box { padding: 10px 14px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.82rem; min-height: 40px; transition: all 0.2s; }
+.result-ok  { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.result-err { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(239,68,68,0.3); }
+.result-idle{ background: var(--surface);    color: var(--muted); border: 1px solid var(--border); }
+
+/* DECISION TABLE */
+.dt-wrap { overflow-x: auto; margin: 14px 0; }
+.dt { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+.dt th { background: var(--accent-dim); color: var(--accent); padding: 8px 12px; font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.06em; border: 1px solid var(--border); white-space: nowrap; }
+.dt td { border: 1px solid var(--border); padding: 8px 12px; text-align: center; font-family: var(--font-mono); font-size: 0.8rem; }
+.dt .row-label { text-align: left; color: var(--muted); font-family: var(--font-body); font-size: 0.82rem; background: var(--surface); font-weight: 500; }
+.dt .section-head { background: #0f2030; color: #67e8f9; font-weight: 700; text-align: left; font-family: var(--font-head); font-size: 0.72rem; letter-spacing: 0.08em; padding: 6px 12px; }
+.dt .y { color: var(--green); }
+.dt .n { color: var(--red); }
+.dt .dash { color: var(--muted); }
+.dt .act-y { background: var(--green-dim); color: var(--green); font-weight: 700; }
+.dt .act-n { color: var(--muted); }
+.dt .col-hi { background: rgba(6,182,212,0.07); }
+.dt tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* STATE MACHINE */
+.state-machine { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; justify-content: center; }
+.sm-state {
+  border-radius: 50%; width: 90px; height: 90px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 2px solid; cursor: pointer; transition: all 0.2s; text-align: center;
+  font-size: 0.72rem; font-weight: 600;
+}
+.sm-state:hover { transform: scale(1.05); }
+.sm-state.s-idle     { border-color: var(--muted);   color: var(--muted);   background: var(--card); }
+.sm-state.s-active   { border-color: var(--accent);  color: var(--accent);  background: var(--accent-dim); box-shadow: 0 0 16px rgba(6,182,212,0.25); }
+.sm-state.s-cart     { border-color: var(--amber);   color: var(--amber);   background: var(--amber-dim); }
+.sm-state.s-checkout { border-color: var(--purple);  color: var(--purple);  background: var(--purple-dim); }
+.sm-state.s-paid     { border-color: var(--green);   color: var(--green);   background: var(--green-dim); }
+.sm-state.s-shipped  { border-color: var(--pink);    color: var(--pink);    background: var(--pink-dim); }
+.sm-state.s-delivered{ border-color: var(--green);   color: var(--green);   background: var(--green-dim); }
+.sm-state.s-cancelled{ border-color: var(--red);     color: var(--red);     background: var(--red-dim); }
+.sm-icon { font-size: 1.3rem; margin-bottom: 4px; }
+.sm-name { font-size: 0.68rem; }
+
+.transitions-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+.tr-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 7px; border: 1px solid var(--border); background: var(--card); font-size: 0.83rem; cursor: pointer; transition: border-color 0.15s; }
+.tr-item:hover { border-color: var(--muted); }
+.tr-item.active { border-color: var(--accent); background: var(--accent-dim); }
+.tr-from { font-family: var(--font-mono); font-size: 0.75rem; min-width: 80px; }
+.tr-event { flex: 1; color: var(--text); }
+.tr-to { font-family: var(--font-mono); font-size: 0.75rem; min-width: 80px; text-align: right; }
+.tr-arrow { color: var(--muted); }
+
+/* USE CASE */
+.uc-item { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 12px; }
+.uc-head { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; background: var(--card); transition: background 0.15s; }
+.uc-head:hover { background: #1e2023; }
+.uc-id { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); min-width: 48px; }
+.uc-title { font-size: 0.88rem; font-weight: 600; flex: 1; }
+.uc-arrow { font-size: 0.72rem; color: var(--muted); transition: transform 0.2s; }
+.uc-body { display: none; border-top: 1px solid var(--border); background: var(--surface); }
+.uc-body.open { display: block; }
+.uc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.uc-col { padding: 16px 18px; }
+.uc-col:first-child { border-right: 1px solid var(--border); }
+.uc-col h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 10px; }
+.uc-col ol, .uc-col ul { font-size: 0.82rem; line-height: 1.85; }
+.uc-alt { padding: 14px 18px; border-top: 1px solid var(--border); }
+.uc-alt h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber); margin-bottom: 8px; }
+.uc-alt ul { font-size: 0.82rem; }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.ci { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.86rem; background: var(--card); transition: border-color 0.15s; }
+.ci:hover { border-color: var(--muted); }
+.ci.done { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: #86efac; }
+.cbox { width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0; margin-top: 1px; }
+.ci.done .cbox { background: var(--green); border-color: var(--green); color: #0a2010; }
+.prog-bar { height: 5px; background: var(--card); border-radius: 10px; overflow: hidden; margin: 8px 0; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 10px; transition: width 0.3s; }
+
+/* SM DEMO */
+.sm-demo { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin: 14px 0; }
+.sm-current { text-align: center; margin-bottom: 16px; }
+.sm-current-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; }
+.sm-current-state { font-family: var(--font-head); font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+.sm-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.sm-btn { padding: 8px 16px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
+.sm-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sm-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.sm-log { font-family: var(--font-mono); font-size: 0.75rem; background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; max-height: 130px; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.sm-log::-webkit-scrollbar { width: 3px; }
+.sm-log-e { display: flex; gap: 8px; }
+.sm-log-t { color: var(--muted); flex-shrink: 0; }
+.sm-log-ok { color: var(--green); }
+.sm-log-err { color: var(--red); }
+
+/* EP SIMULATOR */
+.ep-sim { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.ep-field { display: flex; flex-direction: column; gap: 6px; }
+.ep-field label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+/* QUICK SUMMARY CARDS */
+.summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 14px 0; }
+.sum-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.18s; }
+.sum-card:hover { transform: translateY(-2px); }
+.sum-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.sum-name { font-family: var(--font-head); font-size: 0.72rem; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.sum-abbr { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); }
+
+@media (max-width: 800px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .main { padding: 24px 18px; }
+  .two-col, .three-col, .summary-grid, .ep-sim, .uc-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(3,1fr); }
+  .numline-wrap { margin: 20px 0 50px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="brand-wrap">
+    <div class="brand-dot-row"><div class="bdot"></div><span class="brand-label">Workshop · QA Testing</span></div>
+    <div class="brand-title">Test Design<br><span>Techniques</span></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Techniques</div>
+    <div class="nav-item active" onclick="show('overview',this)"><span class="nav-num">00</span> Overview</div>
+    <div class="nav-item" onclick="show('ep',this)"><span class="nav-num">01</span> Equivalence Partitioning</div>
+    <div class="nav-item" onclick="show('bva',this)"><span class="nav-num">02</span> Boundary Value Analysis</div>
+    <div class="nav-item" onclick="show('dt',this)"><span class="nav-num">03</span> Decision Table Testing</div>
+    <div class="nav-item" onclick="show('st',this)"><span class="nav-num">04</span> State Transition Testing</div>
+    <div class="nav-item" onclick="show('uc',this)"><span class="nav-num">05</span> Use Case Testing</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Practice</div>
+    <div class="nav-item" onclick="show('compare',this)"><span class="nav-num">→</span> Compare All</div>
+    <div class="nav-item" onclick="show('checklist',this)"><span class="nav-num">✓</span> Checklist</div>
+  </div>
+  <div class="sidebar-footer">
+    Five black-box test design<br>techniques every QA engineer<br>must know. Interactive examples<br>with live demos.
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ══ OVERVIEW ══ -->
+<div class="section active" id="s-overview">
+  <div class="page-header">
+    <h1>Test Design <span>Techniques</span></h1>
+    <p>Black-box techniques for designing effective test cases without knowing the internal code. Each technique targets a different type of defect. Click a card to jump to that technique.</p>
+  </div>
+
+  <div class="summary-grid">
+    <div class="sum-card" onclick="show('ep', document.querySelectorAll('.nav-item')[1])">
+      <div class="sum-icon">🟰</div>
+      <div class="sum-name">Equivalence Partitioning</div>
+      <div class="sum-abbr">EP</div>
+    </div>
+    <div class="sum-card" onclick="show('bva', document.querySelectorAll('.nav-item')[2])">
+      <div class="sum-icon">🎯</div>
+      <div class="sum-name">Boundary Value Analysis</div>
+      <div class="sum-abbr">BVA</div>
+    </div>
+    <div class="sum-card" onclick="show('dt', document.querySelectorAll('.nav-item')[3])">
+      <div class="sum-icon">📋</div>
+      <div class="sum-name">Decision Table Testing</div>
+      <div class="sum-abbr">DTT</div>
+    </div>
+    <div class="sum-card" onclick="show('st', document.querySelectorAll('.nav-item')[4])">
+      <div class="sum-icon">🔄</div>
+      <div class="sum-name">State Transition Testing</div>
+      <div class="sum-abbr">STT</div>
+    </div>
+    <div class="sum-card" onclick="show('uc', document.querySelectorAll('.nav-item')[5])">
+      <div class="sum-icon">👤</div>
+      <div class="sum-name">Use Case Testing</div>
+      <div class="sum-abbr">UCT</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Technique</th><th>Best For</th><th>Input</th><th>Output</th><th>When to Use</th></tr>
+      <tr><td><strong>Equivalence Partitioning</strong></td><td>Input range coverage</td><td>Field rules / ranges</td><td>One test per partition</td><td>Large input spaces — reduce test count</td></tr>
+      <tr><td><strong>Boundary Value Analysis</strong></td><td>Edge-case bugs</td><td>Min/max boundaries</td><td>Tests at ±1 of each boundary</td><td>Numeric fields, date ranges, lengths</td></tr>
+      <tr><td><strong>Decision Table Testing</strong></td><td>Business rule combinations</td><td>Conditions + actions</td><td>One column per combination</td><td>Complex if/else logic, eligibility rules</td></tr>
+      <tr><td><strong>State Transition Testing</strong></td><td>System states & flows</td><td>State diagram</td><td>Transition test cases</td><td>Workflows, order status, login attempts</td></tr>
+      <tr><td><strong>Use Case Testing</strong></td><td>End-to-end user flows</td><td>Use case document</td><td>Test scenarios per flow</td><td>User stories, acceptance testing</td></tr>
+    </table>
+  </div>
+
+  <div class="tip">💡 <strong>Key principle:</strong> These are all <strong>black-box</strong> techniques — you design tests based on what the system <em>should do</em>, not how the code works internally. They complement white-box techniques (unit tests, code coverage).</div>
+
+  <h3>Why use these techniques?</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>Without techniques (random testing)</h4>
+      <ul>
+        <li>Tests are redundant — many cover the same logic</li>
+        <li>Easy to miss critical edge cases</li>
+        <li>Hard to know when you've tested "enough"</li>
+        <li>No systematic coverage of requirements</li>
+        <li>Difficult to justify test selection to stakeholders</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>With techniques (systematic testing)</h4>
+      <ul>
+        <li>Minimal tests, maximum coverage</li>
+        <li>Edge cases are found by design, not luck</li>
+        <li>Clear stopping criteria (all partitions covered)</li>
+        <li>Every test traces back to a requirement</li>
+        <li>Repeatable and justifiable to the team</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 01 EP ══ -->
+<div class="section" id="s-ep">
+  <div class="page-header">
+    <h1><span>01</span> Equivalence Partitioning</h1>
+    <p>Divide all possible input values into groups (partitions) where the system behaves the same way. Test one value from each partition — because if one value in a partition passes, all values in that partition should behave the same.</p>
+  </div>
+
+  <h3>Core Concept</h3>
+  <p>EP assumes that inputs within the same partition will be processed identically. So instead of testing every possible value, you pick <strong>one representative value</strong> from each partition. This drastically reduces the number of tests while maintaining good coverage.</p>
+
+  <div class="card">
+    <h4>Example: Age field for a cinema discount system</h4>
+    <p style="margin-bottom:12px">Rule: Children (0–12) get 50% discount. Adults (13–64) pay full price. Seniors (65–120) get 30% discount. Invalid ages are rejected.</p>
+    <div class="partition-bar" id="ep-bar">
+      <div class="part part-invalid-left" onclick="epInfo('invalid-low')">Invalid<br>&lt; 0</div>
+      <div class="part" style="background:#0a2010;color:#22c55e;flex:1;" onclick="epInfo('children')">Child<br>0–12</div>
+      <div class="part" style="background:#042030;color:#06b6d4;flex:2;" onclick="epInfo('adult')">Adult<br>13–64</div>
+      <div class="part" style="background:#1a0f3d;color:#a78bfa;flex:1;" onclick="epInfo('senior')">Senior<br>65–120</div>
+      <div class="part part-invalid-right" onclick="epInfo('invalid-high')">Invalid<br>&gt; 120</div>
+    </div>
+    <div id="ep-info" class="result-box result-idle">← Click a partition to see which test values to pick and why</div>
+  </div>
+
+  <h3>Generated Test Cases</h3>
+  <div class="table-wrap"><table>
+    <tr><th>TC#</th><th>Partition</th><th>Representative Value</th><th>Expected Result</th><th>Rationale</th></tr>
+    <tr><td class="mono">TC-EP-01</td><td><span class="badge b-red">Invalid</span></td><td class="mono">-5</td><td class="fail">Rejected</td><td>Below valid range — any negative should fail</td></tr>
+    <tr><td class="mono">TC-EP-02</td><td><span class="badge b-green">Child</span></td><td class="mono">7</td><td class="pass">50% discount</td><td>Middle of 0–12 range — represents all children</td></tr>
+    <tr><td class="mono">TC-EP-03</td><td><span class="badge b-cyan">Adult</span></td><td class="mono">35</td><td class="pass">Full price</td><td>Middle of 13–64 range — represents all adults</td></tr>
+    <tr><td class="mono">TC-EP-04</td><td><span class="badge b-purple">Senior</span></td><td class="mono">70</td><td class="pass">30% discount</td><td>Middle of 65–120 range — represents all seniors</td></tr>
+    <tr><td class="mono">TC-EP-05</td><td><span class="badge b-red">Invalid</span></td><td class="mono">150</td><td class="fail">Rejected</td><td>Above valid range — any age &gt;120 should fail</td></tr>
+  </table></div>
+
+  <h3>Live Tester — Try it yourself</h3>
+  <div class="tester-wrap">
+    <p style="margin-bottom:10px;font-size:0.83rem">Enter any age and see which partition it falls into and what the system should do:</p>
+    <div class="tester-row">
+      <input type="number" id="ep-input" class="tester-input" placeholder="Enter age (e.g. 7, 35, 70, -5, 150)">
+      <button class="tester-btn" onclick="testEP()">Test</button>
+    </div>
+    <div id="ep-result" class="result-box result-idle">Enter an age above and click Test</div>
+  </div>
+
+  <h3>EP Rules</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>Valid partitions</h4>
+      <ul>
+        <li>Inputs the system should <strong>accept</strong></li>
+        <li>At least one test per valid partition</li>
+        <li>Try to use a "typical" mid-range value</li>
+        <li>Covers the happy path scenarios</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Invalid partitions</h4>
+      <ul>
+        <li>Inputs the system should <strong>reject</strong></li>
+        <li>At least one test per invalid partition</li>
+        <li>Test that correct error messages appear</li>
+        <li>Never combine multiple invalid values in one test</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warn">⚠️ <strong>Common mistake:</strong> Testing only the happy path (valid partition). Always test <em>all</em> invalid partitions too — bugs often hide in error-handling code.</div>
+</div>
+
+<!-- ══ 02 BVA ══ -->
+<div class="section" id="s-bva">
+  <div class="page-header">
+    <h1><span>02</span> Boundary Value Analysis</h1>
+    <p>Bugs cluster at the edges of input ranges. BVA tests the values exactly at, just below, and just above each boundary. It extends EP by focusing specifically on the most fault-prone values.</p>
+  </div>
+
+  <h3>Why boundaries are risky</h3>
+  <p>Developers often make "off-by-one" errors. A condition written as <code>&gt;</code> when it should be <code>&gt;=</code> only fails at the exact boundary. BVA is designed to catch exactly these bugs.</p>
+  <div class="code-block" style="background:#050810;border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:var(--font-mono);font-size:0.8rem;color:#a5f3fc;line-height:1.9;margin:10px 0;overflow-x:auto;white-space:pre"><span style="color:#475569">// Bug: should be >= 18 but developer wrote ></span>
+<span style="color:#f472b6">if</span> (age > <span style="color:#c4b5fd">18</span>) {  <span style="color:#475569">// fails at exactly 18!</span>
+  grantAccess();
+}
+
+<span style="color:#475569">// BVA tests age 17, 18, 19 — catches this bug at 18</span></div>
+
+  <h3>BVA Test Points</h3>
+  <p>For a valid range <code>[min, max]</code>, BVA generates these test values:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Test Point</th><th>Value</th><th>Expected</th><th>Why Test It</th></tr>
+    <tr><td>Below lower boundary</td><td class="mono">min − 1</td><td class="fail">Invalid</td><td>Catches off-by-one below the minimum</td></tr>
+    <tr><td>At lower boundary</td><td class="mono">min</td><td class="pass">Valid</td><td>The minimum itself must be accepted</td></tr>
+    <tr><td>Just above lower boundary</td><td class="mono">min + 1</td><td class="pass">Valid</td><td>One above min must also be accepted</td></tr>
+    <tr><td>Just below upper boundary</td><td class="mono">max − 1</td><td class="pass">Valid</td><td>One below max must be accepted</td></tr>
+    <tr><td>At upper boundary</td><td class="mono">max</td><td class="pass">Valid</td><td>The maximum itself must be accepted</td></tr>
+    <tr><td>Above upper boundary</td><td class="mono">max + 1</td><td class="fail">Invalid</td><td>Catches off-by-one above the maximum</td></tr>
+  </table></div>
+
+  <h3>Interactive Number Line — Password Length (8–20 chars)</h3>
+  <div class="numline-wrap" id="bva-numline">
+    <div class="numline">
+      <div class="numline-fill" style="left:26.7%;right:26.7%"></div>
+    </div>
+    <!-- points at: 7, 8, 9, ... 19, 20, 21 mapped across 0-30 range -->
+  </div>
+  <div id="bva-points-info" class="result-box result-idle" style="margin-bottom:14px">Click a boundary point above to see its test case details</div>
+
+  <h3>BVA Test Cases — Password Length (8–20 characters)</h3>
+  <div class="table-wrap"><table>
+    <tr><th>TC#</th><th>Length</th><th>Example Password</th><th>Expected</th><th>Boundary Type</th></tr>
+    <tr><td class="mono">TC-BVA-01</td><td class="mono">7</td><td class="mono">Passwo1</td><td class="fail">Rejected — too short</td><td>min − 1</td></tr>
+    <tr><td class="mono">TC-BVA-02</td><td class="mono">8</td><td class="mono">Password</td><td class="pass">Accepted</td><td>min (lower boundary)</td></tr>
+    <tr><td class="mono">TC-BVA-03</td><td class="mono">9</td><td class="mono">Password1</td><td class="pass">Accepted</td><td>min + 1</td></tr>
+    <tr><td class="mono">TC-BVA-04</td><td class="mono">19</td><td class="mono">Abcdefghijklmnopqr1</td><td class="pass">Accepted</td><td>max − 1</td></tr>
+    <tr><td class="mono">TC-BVA-05</td><td class="mono">20</td><td class="mono">Abcdefghijklmnopqrs1</td><td class="pass">Accepted</td><td>max (upper boundary)</td></tr>
+    <tr><td class="mono">TC-BVA-06</td><td class="mono">21</td><td class="mono">Abcdefghijklmnopqrst1</td><td class="fail">Rejected — too long</td><td>max + 1</td></tr>
+  </table></div>
+
+  <h3>Live BVA Tester — Password Length</h3>
+  <div class="tester-wrap">
+    <p style="margin-bottom:10px;font-size:0.83rem">Type a password (valid range: 8–20 characters). Try the exact boundary values.</p>
+    <div class="tester-row">
+      <input type="text" id="bva-input" class="tester-input" placeholder="Type your password here..." oninput="testBVA()">
+    </div>
+    <div id="bva-result" class="result-box result-idle">Start typing to test boundary values</div>
+  </div>
+
+  <div class="tip">💡 <strong>EP + BVA together:</strong> Use EP to identify the partitions, then apply BVA to each partition boundary. They complement each other perfectly — EP reduces the number of tests, BVA ensures you don't miss the edges.</div>
+</div>
+
+<!-- ══ 03 DECISION TABLE ══ -->
+<div class="section" id="s-dt">
+  <div class="page-header">
+    <h1><span>03</span> Decision Table Testing</h1>
+    <p>A systematic way to test all combinations of business rules. Decision tables map every combination of conditions (inputs) to a specific action (output), making it impossible to miss a combination.</p>
+  </div>
+
+  <h3>Structure</h3>
+  <p>A decision table has:</p>
+  <ul>
+    <li><strong>Conditions (rows at top)</strong> — the inputs / business rules (Y/N or specific values)</li>
+    <li><strong>Actions (rows at bottom)</strong> — what the system does for each combination</li>
+    <li><strong>Columns (rules)</strong> — each column is one combination = one test case</li>
+  </ul>
+
+  <h3>Example: E-Commerce Discount System</h3>
+  <p>Rules: Logged-in users get 10% discount. Cart over $100 gives free shipping. Members get an extra 5% off. All combinations:</p>
+
+  <div class="dt-wrap">
+    <table class="dt" id="dt-table">
+      <thead>
+        <tr>
+          <th style="min-width:160px">Condition / Action</th>
+          <th class="col-hi">R1</th><th>R2</th><th>R3</th><th>R4</th><th>R5</th><th>R6</th><th>R7</th><th>R8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="section-head" colspan="9">CONDITIONS</td></tr>
+        <tr>
+          <td class="row-label">Logged in?</td>
+          <td class="y col-hi">Y</td><td class="y">Y</td><td class="y">Y</td><td class="y">Y</td>
+          <td class="n">N</td><td class="n">N</td><td class="n">N</td><td class="n">N</td>
+        </tr>
+        <tr>
+          <td class="row-label">Cart &gt; $100?</td>
+          <td class="y col-hi">Y</td><td class="y">Y</td><td class="n">N</td><td class="n">N</td>
+          <td class="y">Y</td><td class="y">Y</td><td class="n">N</td><td class="n">N</td>
+        </tr>
+        <tr>
+          <td class="row-label">Is member?</td>
+          <td class="y col-hi">Y</td><td class="n">N</td><td class="y">Y</td><td class="n">N</td>
+          <td class="y">Y</td><td class="n">N</td><td class="y">Y</td><td class="n">N</td>
+        </tr>
+        <tr><td class="section-head" colspan="9">ACTIONS</td></tr>
+        <tr>
+          <td class="row-label">Apply 10% discount</td>
+          <td class="act-y col-hi">✓</td><td class="act-y">✓</td><td class="act-y">✓</td><td class="act-y">✓</td>
+          <td class="act-n">—</td><td class="act-n">—</td><td class="act-n">—</td><td class="act-n">—</td>
+        </tr>
+        <tr>
+          <td class="row-label">Apply extra 5% (member)</td>
+          <td class="act-y col-hi">✓</td><td class="act-n">—</td><td class="act-y">✓</td><td class="act-n">—</td>
+          <td class="act-y">✓</td><td class="act-n">—</td><td class="act-y">✓</td><td class="act-n">—</td>
+        </tr>
+        <tr>
+          <td class="row-label">Free shipping</td>
+          <td class="act-y col-hi">✓</td><td class="act-y">✓</td><td class="act-n">—</td><td class="act-n">—</td>
+          <td class="act-y">✓</td><td class="act-y">✓</td><td class="act-n">—</td><td class="act-n">—</td>
+        </tr>
+        <tr>
+          <td class="row-label">Total discount %</td>
+          <td class="act-y col-hi">15%</td><td class="act-y">10%</td><td class="act-y">15%</td><td class="act-y">10%</td>
+          <td class="act-y">5%</td><td class="act-n">0%</td><td class="act-y">5%</td><td class="act-n">0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tip">💡 Column R1 (highlighted) = most complex case: logged in + cart &gt;$100 + member = 15% off + free shipping. Each column = exactly one test case.</div>
+
+  <h3>Interactive Decision Table — Click a rule column</h3>
+  <div class="card">
+    <p style="font-size:0.83rem;margin-bottom:12px">Click R1–R8 in the table to highlight a column. The number of test cases for N binary conditions is always <code>2^N</code>. Here: 2³ = 8 rules.</p>
+    <div id="dt-selected" class="result-box result-idle">Click a rule number (R1–R8) in the table header to see that test scenario</div>
+  </div>
+
+  <h3>How to build a decision table</h3>
+  <ol>
+    <li>List all <strong>conditions</strong> (inputs / rules). Each condition has Y/N values.</li>
+    <li>Calculate total rules: <code>2^(number of conditions)</code></li>
+    <li>Fill in all combinations (like binary counting: YYY, YYN, YNY, YNN…)</li>
+    <li>For each combination, determine the <strong>action</strong> (what the system should do)</li>
+    <li>Each column becomes one test case</li>
+    <li>Optionally merge columns with identical actions (called "collapsing")</li>
+  </ol>
+
+  <div class="warn">⚠️ With many conditions, the table grows exponentially: 5 conditions = 32 rules. Use collapsing (merging rules with same outcome) to reduce the table size.</div>
+</div>
+
+<!-- ══ 04 STATE TRANSITION ══ -->
+<div class="section" id="s-st">
+  <div class="page-header">
+    <h1><span>04</span> State Transition Testing</h1>
+    <p>Systems can exist in different states, and events trigger transitions between them. STT tests that the system correctly transitions from one state to another — and correctly handles invalid transitions.</p>
+  </div>
+
+  <h3>Key Terms</h3>
+  <div class="three-col">
+    <div class="card"><h4>State</h4><p>A stable condition the system is in at a given time. Example: an order can be <em>Pending</em>, <em>Paid</em>, <em>Shipped</em>, or <em>Delivered</em>.</p></div>
+    <div class="card"><h4>Event / Trigger</h4><p>An input or action that causes a state change. Example: "Payment received" moves an order from <em>Pending</em> → <em>Paid</em>.</p></div>
+    <div class="card"><h4>Transition</h4><p>The movement from one state to another in response to an event, possibly with a guard condition and an action.</p></div>
+  </div>
+
+  <h3>Example: Order Status State Machine</h3>
+  <div class="state-machine" id="sm-states"></div>
+
+  <h3>Valid Transitions</h3>
+  <div class="transitions-list" id="tr-list"></div>
+
+  <h3>Live State Machine Demo — Click events to transition</h3>
+  <div class="sm-demo">
+    <div class="sm-current">
+      <div class="sm-current-label">Current State</div>
+      <div class="sm-current-state" id="sm-cur-state">Pending</div>
+    </div>
+    <div class="sm-actions" id="sm-action-btns"></div>
+    <div class="sm-log" id="sm-log">
+      <div class="sm-log-e"><span class="sm-log-t">00:00</span><span style="color:var(--accent)">State machine initialized → state: Pending</span></div>
+    </div>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="smReset()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.78rem;cursor:pointer;">Reset to Pending</button>
+    </div>
+  </div>
+
+  <h3>What to test in state transition testing</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>Valid transitions (happy path)</h4>
+      <ul>
+        <li>Each valid transition occurs correctly</li>
+        <li>Correct new state reached after event</li>
+        <li>Correct action executed on transition</li>
+        <li>Complete valid sequence (Pending→Paid→Shipped→Delivered)</li>
+        <li>All loops (e.g., retry payment multiple times)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Invalid transitions (negative tests)</h4>
+      <ul>
+        <li>Event that shouldn't work in current state</li>
+        <li>Example: "Ship" an order that hasn't been paid yet</li>
+        <li>Example: "Cancel" an already-delivered order</li>
+        <li>System should reject and stay in current state</li>
+        <li>Correct error message shown</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>State Transition Table</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Current State</th><th>Event</th><th>New State</th><th>Action</th><th>Invalid if…</th></tr>
+    <tr><td>Pending</td><td>Payment received</td><td class="pass">Paid</td><td>Send confirmation email</td><td>Payment already received</td></tr>
+    <tr><td>Pending</td><td>Cancel order</td><td class="fail">Cancelled</td><td>Refund if any payment</td><td>Order already shipped</td></tr>
+    <tr><td>Paid</td><td>Ship order</td><td class="pass">Shipped</td><td>Send tracking number</td><td>Not yet paid</td></tr>
+    <tr><td>Shipped</td><td>Deliver order</td><td class="pass">Delivered</td><td>Send delivery notification</td><td>Not yet shipped</td></tr>
+    <tr><td>Shipped</td><td>Return initiated</td><td class="fail">Cancelled</td><td>Start return process</td><td>Already delivered</td></tr>
+    <tr><td>Any</td><td>Invalid event for state</td><td style="color:var(--amber)">Unchanged</td><td>Show error message</td><td>—</td></tr>
+  </table></div>
+</div>
+
+<!-- ══ 05 USE CASE ══ -->
+<div class="section" id="s-uc">
+  <div class="page-header">
+    <h1><span>05</span> Use Case Testing</h1>
+    <p>Tests derived from use cases — descriptions of how a user interacts with the system to achieve a goal. Each use case has a main flow (happy path) and alternative/exception flows (what can go wrong).</p>
+  </div>
+
+  <h3>Use Case Structure</h3>
+  <div class="two-col">
+    <div class="card">
+      <h4>Use Case document contains:</h4>
+      <ul>
+        <li><strong>Use Case ID + Name</strong> — unique identifier</li>
+        <li><strong>Actor</strong> — who initiates the use case</li>
+        <li><strong>Preconditions</strong> — what must be true before</li>
+        <li><strong>Main Flow</strong> — step-by-step happy path</li>
+        <li><strong>Alternative Flows</strong> — valid variations</li>
+        <li><strong>Exception Flows</strong> — error scenarios</li>
+        <li><strong>Postconditions</strong> — state after success</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Test cases derived from each:</h4>
+      <ul>
+        <li>One test for the <strong>full main flow</strong></li>
+        <li>One test per <strong>alternative flow</strong></li>
+        <li>One test per <strong>exception flow</strong></li>
+        <li>One test for <strong>precondition violation</strong></li>
+        <li>One test verifying <strong>postconditions</strong></li>
+        <li>One test for each <strong>actor variation</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Use Cases — E-Commerce Application (click to expand)</h3>
+  <div id="uc-container"></div>
+
+  <h3>Use Case Testing vs Other Techniques</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Aspect</th><th>Use Case Testing</th><th>EP / BVA</th><th>Decision Table</th></tr>
+    <tr><td>Focus</td><td>User goals & workflows</td><td>Input data values</td><td>Business rule combinations</td></tr>
+    <tr><td>Perspective</td><td>User's point of view</td><td>System boundary</td><td>Logic / rules</td></tr>
+    <tr><td>Best for</td><td>Acceptance testing, E2E</td><td>Field validation</td><td>Eligibility, pricing rules</td></tr>
+    <tr><td>Input</td><td>Use case documents</td><td>Field specifications</td><td>Business rules</td></tr>
+    <tr><td>Test type</td><td>Scenario-based</td><td>Data-driven</td><td>Combinatorial</td></tr>
+  </table></div>
+
+  <div class="success">✅ <strong>Use Case Testing is ideal for acceptance testing</strong> — it verifies the system does what users actually need, not just what the technical spec says. Stakeholders can read and validate use case tests.</div>
+</div>
+
+<!-- ══ COMPARE ══ -->
+<div class="section" id="s-compare">
+  <div class="page-header">
+    <h1>Compare <span>All Techniques</span></h1>
+    <p>When to use each technique and how they work together in a real test strategy.</p>
+  </div>
+
+  <h3>When to apply each technique</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Situation</th><th>Best Technique</th><th>Why</th></tr>
+    <tr><td>Age field that accepts 18–65</td><td><span class="badge b-cyan">EP</span> + <span class="badge b-purple">BVA</span></td><td>EP identifies valid/invalid partitions; BVA tests the boundary edges (17, 18, 19, 64, 65, 66)</td></tr>
+    <tr><td>Login with max 3 attempts then lockout</td><td><span class="badge b-amber">State Transition</span></td><td>Clear states: Unlocked → Warning → Locked. Events: correct/wrong password, reset</td></tr>
+    <tr><td>Discount: members + big cart + logged in</td><td><span class="badge b-green">Decision Table</span></td><td>Multiple yes/no conditions with different combinations of outcomes — exactly what DT handles</td></tr>
+    <tr><td>User places an online order end-to-end</td><td><span class="badge b-purple">Use Case</span></td><td>Multi-step user goal with main flow + alternative flows (out of stock, payment failure)</td></tr>
+    <tr><td>Password validation (length + special chars)</td><td><span class="badge b-cyan">EP</span> + <span class="badge b-purple">BVA</span></td><td>EP: valid/invalid length partitions + special char partitions. BVA: boundary lengths</td></tr>
+    <tr><td>Order status workflow (Pending→Paid→Shipped)</td><td><span class="badge b-amber">State Transition</span></td><td>System has defined states and events that trigger transitions</td></tr>
+    <tr><td>Insurance eligibility (age, health, region)</td><td><span class="badge b-green">Decision Table</span></td><td>Many conditions combined produce different eligibility outcomes</td></tr>
+    <tr><td>User registers a new account</td><td><span class="badge b-purple">Use Case</span> + <span class="badge b-cyan">EP</span></td><td>Use Case covers the full registration flow; EP covers each individual field validation</td></tr>
+  </table></div>
+
+  <h3>Combining techniques — real project strategy</h3>
+  <div class="card">
+    <h4>A practical approach for a login module:</h4>
+    <ol style="font-size:0.85rem;line-height:2">
+      <li><strong>Use Case Testing</strong> — define the overall "Login" use case with main flow + exception flows (wrong password, locked account, forgot password)</li>
+      <li><strong>Equivalence Partitioning</strong> — partition email field (valid email / invalid format / empty) and password field (valid / too short / too long)</li>
+      <li><strong>Boundary Value Analysis</strong> — test password at exactly 8 chars, 7 chars, 9 chars, 20 chars, 21 chars</li>
+      <li><strong>Decision Table</strong> — combine remember-me + valid credentials + account locked → what happens in each combination?</li>
+      <li><strong>State Transition</strong> — model login attempt states: Active → 1 fail → 2 fails → Locked → Unlock request → Active</li>
+    </ol>
+  </div>
+
+  <div class="tip">💡 <strong>Coverage pyramid:</strong> Use EP/BVA for field-level unit tests, Decision Tables for business rule integration tests, Use Cases for E2E acceptance tests, and State Transition for workflow regression tests.</div>
+</div>
+
+<!-- ══ CHECKLIST ══ -->
+<div class="section" id="s-checklist">
+  <div class="page-header">
+    <h1>Test Design <span>Checklist</span></h1>
+    <p>Verify you've applied all techniques correctly. Check off each item as you complete it.</p>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <span style="font-size:0.83rem;color:var(--muted)" id="cl-label">0 / 25 completed</span>
+    <button onclick="resetCl()" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:0.78rem;cursor:pointer;">Reset</button>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="cl-prog" style="width:0%"></div></div>
+  <ul class="checklist" id="cl-list" style="margin-top:14px"></ul>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── SECTION SWITCHER ──────────────────────────────
+function show(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  if (el && el.classList) el.classList.add('active');
+}
+document.querySelectorAll('.nav-item').forEach(ni => {
+  ni.addEventListener('click', function() { show(this.getAttribute('onclick').match(/'(\w+)'/)[1], this); });
+});
+
+// ── EP PARTITION INFO ──────────────────────────────
+const epInfoMap = {
+  'invalid-low':  { cls:'result-err', msg:'Partition: INVALID (below minimum) | Value: -5 | Expected: "Age must be between 0 and 120" | One test covers ALL negative ages — no need to test -1, -10, -100 separately.' },
+  'children':     { cls:'result-ok',  msg:'Partition: VALID — Children (0–12) | Representative value: 7 | Expected: 50% discount applied | Testing age 7 covers the entire 0–12 range. Ages 1, 5, 12 would all behave identically.' },
+  'adult':        { cls:'result-ok',  msg:'Partition: VALID — Adults (13–64) | Representative value: 35 | Expected: Full price, no discount | Middle of range. Ages 13, 30, 50, 64 all produce identical behavior.' },
+  'senior':       { cls:'result-ok',  msg:'Partition: VALID — Seniors (65–120) | Representative value: 70 | Expected: 30% discount applied | Any value 65–120 should give same discount. One test covers all.' },
+  'invalid-high': { cls:'result-err', msg:'Partition: INVALID (above maximum) | Value: 150 | Expected: "Age must be between 0 and 120" | Covers ALL ages above 120 — test 121, 200, 999 would all be redundant.' },
+};
+function epInfo(key) {
+  const info = epInfoMap[key];
+  const el = document.getElementById('ep-info');
+  el.className = 'result-box ' + info.cls;
+  el.textContent = info.msg;
+}
+
+// ── EP LIVE TEST ───────────────────────────────────
+function testEP() {
+  const val = parseInt(document.getElementById('ep-input').value);
+  const res = document.getElementById('ep-result');
+  const inp = document.getElementById('ep-input');
+  if (isNaN(val)) { res.className='result-box result-err'; res.textContent='Please enter a valid number'; return; }
+  let msg, ok;
+  if (val < 0)         { msg=`Age ${val} → INVALID partition — below minimum (< 0) → Error: "Age must be 0 or above"`; ok=false; }
+  else if (val <= 12)  { msg=`Age ${val} → CHILD partition (0–12) → Discount: 50% off ticket price ✓`; ok=true; }
+  else if (val <= 64)  { msg=`Age ${val} → ADULT partition (13–64) → Full price, no discount ✓`; ok=true; }
+  else if (val <= 120) { msg=`Age ${val} → SENIOR partition (65–120) → Discount: 30% off ticket price ✓`; ok=true; }
+  else                 { msg=`Age ${val} → INVALID partition — above maximum (> 120) → Error: "Age must be 120 or below"`; ok=false; }
+  res.className = 'result-box ' + (ok ? 'result-ok' : 'result-err');
+  res.textContent = msg;
+  inp.className = 'tester-input ' + (ok ? 'ok' : 'err');
+}
+
+// ── BVA NUMBER LINE ────────────────────────────────
+const bvaPoints = [
+  { val:7,  pct:18, type:'min-1', color:'#ef4444', label:'7', desc:'min − 1: Must be REJECTED. Length 7 is too short. Catches off-by-one bugs at the lower boundary.' },
+  { val:8,  pct:27, type:'min',   color:'#22c55e', label:'8', desc:'min: Must be ACCEPTED. Exactly 8 characters is the minimum allowed length. System must accept this.' },
+  { val:9,  pct:36, type:'min+1', color:'#86efac', label:'9', desc:'min + 1: Must be ACCEPTED. One above the minimum. Confirms the boundary transitions correctly.' },
+  { val:19, pct:64, type:'max-1', color:'#86efac', label:'19', desc:'max − 1: Must be ACCEPTED. One below maximum. Confirms upper boundary area works correctly.' },
+  { val:20, pct:73, type:'max',   color:'#22c55e', label:'20', desc:'max: Must be ACCEPTED. Exactly 20 characters is the maximum allowed length. Must be accepted.' },
+  { val:21, pct:82, type:'max+1', color:'#ef4444', label:'21', desc:'max + 1: Must be REJECTED. Length 21 is too long. Catches off-by-one bugs at the upper boundary.' },
+];
+const numlineWrap = document.getElementById('bva-numline');
+const nl = numlineWrap.querySelector('.numline');
+bvaPoints.forEach((p, i) => {
+  const pt = document.createElement('div');
+  pt.className = 'boundary-point';
+  pt.style.left = p.pct + '%';
+  const isInvalid = p.type.includes('+1') && p.val === 21 || p.type === 'min-1';
+  pt.innerHTML = `<div class="bp-dot" style="background:${p.color}20;color:${p.color};border-color:${p.color}">${p.val}</div><div class="bp-label" style="color:${p.color}">${p.type}</div>`;
+  pt.onclick = () => {
+    const info = document.getElementById('bva-points-info');
+    info.className = 'result-box ' + (isInvalid ? 'result-err' : 'result-ok');
+    info.textContent = `Length ${p.val} (${p.type}): ${p.desc}`;
+  };
+  nl.appendChild(pt);
+});
+
+// ── BVA LIVE TEST ──────────────────────────────────
+function testBVA() {
+  const val = document.getElementById('bva-input').value;
+  const len = val.length;
+  const res = document.getElementById('bva-result');
+  const inp = document.getElementById('bva-input');
+  let msg, ok;
+  if (len === 0)       { res.className='result-box result-idle'; res.textContent='Start typing to test boundary values'; inp.className='tester-input'; return; }
+  else if (len === 7)  { msg=`Length: 7 (min−1) → REJECTED — too short by 1 character. This is the key boundary test!`; ok=false; }
+  else if (len === 8)  { msg=`Length: 8 (min) → ACCEPTED ✓ — exactly at the minimum boundary. Must be accepted.`; ok=true; }
+  else if (len === 9)  { msg=`Length: 9 (min+1) → ACCEPTED ✓ — one above minimum. Confirms boundary transition.`; ok=true; }
+  else if (len < 8)    { msg=`Length: ${len} → REJECTED — below minimum (8). Not a boundary test value.`; ok=false; }
+  else if (len === 19) { msg=`Length: 19 (max−1) → ACCEPTED ✓ — one below maximum. Upper boundary area.`; ok=true; }
+  else if (len === 20) { msg=`Length: 20 (max) → ACCEPTED ✓ — exactly at maximum boundary. Must be accepted.`; ok=true; }
+  else if (len === 21) { msg=`Length: 21 (max+1) → REJECTED — too long by 1 character. Key upper boundary test!`; ok=false; }
+  else if (len > 21)   { msg=`Length: ${len} → REJECTED — exceeds maximum (20). Not a boundary test value.`; ok=false; }
+  else                 { msg=`Length: ${len} → ACCEPTED ✓ — within valid range (8–20). Not a boundary value.`; ok=true; }
+  res.className = 'result-box ' + (ok ? 'result-ok' : 'result-err');
+  res.textContent = msg;
+  inp.className = 'tester-input ' + (ok ? 'ok' : 'err');
+}
+
+// ── DECISION TABLE COLUMN CLICK ────────────────────
+const dtDescriptions = {
+  1: 'R1: Logged in=Y, Cart>$100=Y, Member=Y → Best case: 15% total discount (10%+5%) + free shipping',
+  2: 'R2: Logged in=Y, Cart>$100=Y, Member=N → 10% discount + free shipping (no member bonus)',
+  3: 'R3: Logged in=Y, Cart>$100=N, Member=Y → 15% discount only, no free shipping (cart too small)',
+  4: 'R4: Logged in=Y, Cart>$100=N, Member=N → 10% discount only, no free shipping, no member bonus',
+  5: 'R5: Logged in=N, Cart>$100=Y, Member=Y → 5% member discount + free shipping (no login discount)',
+  6: 'R6: Logged in=N, Cart>$100=Y, Member=N → Free shipping only, no discount (guest + big cart)',
+  7: 'R7: Logged in=N, Cart>$100=N, Member=Y → 5% member discount only (guest with member account)',
+  8: 'R8: Logged in=N, Cart>$100=N, Member=N → No discount, no free shipping. Guest with small cart.',
+};
+document.querySelectorAll('.dt thead th').forEach((th, i) => {
+  if (i === 0) return;
+  th.style.cursor = 'pointer';
+  th.onclick = () => {
+    const sel = document.getElementById('dt-selected');
+    sel.className = 'result-box result-ok';
+    sel.textContent = dtDescriptions[i] || '';
+    document.querySelectorAll('.dt .col-hi').forEach(el => el.classList.remove('col-hi'));
+    document.querySelectorAll(`.dt tr td:nth-child(${i+1}), .dt tr th:nth-child(${i+1})`).forEach(el => el.classList.add('col-hi'));
+  };
+});
+
+// ── STATE MACHINE ──────────────────────────────────
+const states = {
+  Pending:   { icon:'⏳', cls:'s-idle' },
+  Paid:      { icon:'💳', cls:'s-paid' },
+  Shipped:   { icon:'📦', cls:'s-shipped' },
+  Delivered: { icon:'✅', cls:'s-delivered' },
+  Cancelled: { icon:'❌', cls:'s-cancelled' },
+};
+const transitions = [
+  { from:'Pending',  event:'Payment received', to:'Paid',      action:'Send confirmation email' },
+  { from:'Pending',  event:'Cancel order',     to:'Cancelled', action:'Release reserved stock' },
+  { from:'Paid',     event:'Ship order',       to:'Shipped',   action:'Send tracking number' },
+  { from:'Paid',     event:'Cancel order',     to:'Cancelled', action:'Issue refund' },
+  { from:'Shipped',  event:'Order delivered',  to:'Delivered', action:'Send delivery confirmation' },
+  { from:'Shipped',  event:'Return initiated', to:'Cancelled', action:'Start return process' },
+];
+
+const smStatesEl = document.getElementById('sm-states');
+Object.entries(states).forEach(([name, s]) => {
+  const el = document.createElement('div');
+  el.className = `sm-state ${s.cls}`;
+  el.id = 'smst-' + name;
+  el.innerHTML = `<div class="sm-icon">${s.icon}</div><div class="sm-name">${name}</div>`;
+  smStatesEl.appendChild(el);
+});
+
+const trList = document.getElementById('tr-list');
+transitions.forEach((t, i) => {
+  const el = document.createElement('div');
+  el.className = 'tr-item';
+  el.id = 'tr-' + i;
+  el.innerHTML = `<span class="tr-from" style="color:var(--muted)">${t.from}</span><span class="tr-arrow">→</span><span class="tr-event" style="color:var(--text)">${t.event}</span><span class="tr-arrow">→</span><span class="tr-to" style="color:var(--accent)">${t.to}</span>`;
+  el.title = `Action: ${t.action}`;
+  trList.appendChild(el);
+});
+
+let currentState = 'Pending';
+function smTs() { const n=new Date(); return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
+
+function smRender() {
+  document.getElementById('sm-cur-state').textContent = currentState;
+  const avail = transitions.filter(t => t.from === currentState);
+  const btns = document.getElementById('sm-action-btns');
+  btns.innerHTML = '';
+  avail.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'sm-btn'; b.textContent = t.event;
+    b.onclick = () => smTransition(t);
+    btns.appendChild(b);
+  });
+  if (avail.length === 0) {
+    const b = document.createElement('button');
+    b.className = 'sm-btn'; b.disabled = true; b.textContent = 'No further transitions (terminal state)';
+    btns.appendChild(b);
+  }
+  document.querySelectorAll('.sm-state').forEach(el => el.style.opacity = '0.35');
+  const active = document.getElementById('smst-' + currentState);
+  if (active) active.style.opacity = '1';
+}
+
+function smTransition(t) {
+  const log = document.getElementById('sm-log');
+  const e = document.createElement('div');
+  e.className = 'sm-log-e';
+  e.innerHTML = `<span class="sm-log-t">${smTs()}</span><span class="sm-log-ok">${t.from} → [${t.event}] → ${t.to} | Action: ${t.action}</span>`;
+  log.prepend(e);
+  currentState = t.to;
+  smRender();
+  document.querySelectorAll('.tr-item').forEach((el, i) => el.classList.remove('active'));
+  const idx = transitions.findIndex(tr => tr.from === t.from && tr.event === t.event);
+  if (idx >= 0) document.getElementById('tr-'+idx).classList.add('active');
+}
+
+function smReset() {
+  currentState = 'Pending';
+  smRender();
+  const log = document.getElementById('sm-log');
+  const e = document.createElement('div');
+  e.className = 'sm-log-e';
+  e.innerHTML = `<span class="sm-log-t">${smTs()}</span><span style="color:var(--accent)">Reset → state: Pending</span>`;
+  log.prepend(e);
+  document.querySelectorAll('.tr-item').forEach(el => el.classList.remove('active'));
+}
+
+smRender();
+
+// ── USE CASES ──────────────────────────────────────
+const useCases = [
+  {
+    id:'UC-01', title:'User registers a new account', actor:'Guest user',
+    pre:['User has a valid email address', 'User is not already registered'],
+    main:['User navigates to /register', 'System displays registration form', 'User fills in name, email, password, confirm password', 'User clicks "Create Account"', 'System validates all fields', 'System creates account and sends verification email', 'System redirects to "Check your email" page'],
+    post:['Account exists in the database (unverified)', 'Verification email sent', 'User is on confirmation page'],
+    alt:['3a. User already has account → show "Login instead?" link', '6a. Email already registered → show "This email is already in use"'],
+    exc:['5a. Email format invalid → highlight field + show error message', '5b. Password too short → show "Minimum 8 characters" error', '5c. Passwords don\'t match → show "Passwords must match" error', '5d. Name is empty → show "Name is required" error'],
+    tests:['Main flow — all valid inputs → account created + email sent', 'Alt 3a — existing email address → see "Login instead" prompt', 'Exc 5a — invalid email format → correct error on email field', 'Exc 5b — 7-char password → "Minimum 8 characters" shown', 'Exc 5c — mismatched passwords → error on confirm field', 'Precondition violation — already logged in → redirected away']
+  },
+  {
+    id:'UC-02', title:'User places an order', actor:'Logged-in customer',
+    pre:['User is logged in', 'At least one product in cart', 'User has saved a payment method'],
+    main:['User reviews cart contents', 'User proceeds to checkout', 'System shows order summary + shipping address', 'User confirms shipping address', 'User selects payment method', 'User clicks "Place Order"', 'System charges payment', 'System creates order (status: Pending)', 'System sends order confirmation email', 'System redirects to order confirmation page'],
+    post:['Order created with Pending status', 'Stock decremented', 'Payment charged', 'Confirmation email sent'],
+    alt:['4a. User wants different address → "Add new address" flow', '5a. User wants to pay with new card → "Add payment method" flow', '1a. Cart has out-of-stock item → show warning, allow remove'],
+    exc:['7a. Payment declined → show "Payment failed, try another method"', '7b. Card expired → show "Your card has expired" with link to update', '7c. Network timeout → show "Order not placed, please try again" (idempotent retry)', '1b. Cart is empty → redirect to shop with "Your cart is empty"'],
+    tests:['Main flow — happy path → order placed, email sent, stock reduced', 'Alt 4a — change address during checkout → new address saved and used', 'Exc 7a — declined card → error message, no order created', 'Exc 7c — network timeout → retry is safe (no duplicate order)', 'Precondition: empty cart → cannot reach checkout', 'Precondition: not logged in → redirected to login']
+  },
+  {
+    id:'UC-03', title:'User resets forgotten password', actor:'Registered user (not logged in)',
+    pre:['User has a registered account', 'User has access to their email'],
+    main:['User clicks "Forgot password" on login page', 'System shows "Enter your email" form', 'User enters registered email', 'System sends password reset link (valid 1 hour)', 'User opens email and clicks the link', 'System shows "Enter new password" form', 'User enters and confirms new password', 'System updates password and invalidates all sessions', 'System redirects to login page with success message'],
+    post:['Password updated in database', 'Old password no longer works', 'All existing sessions invalidated', 'Reset link is consumed (single-use)'],
+    alt:['4a. User doesn\'t receive email → "Resend" button available after 60s', '7a. Link already used → "This link has already been used" message'],
+    exc:['3a. Email not registered → system says "If this email exists, we\'ll send a link" (security: don\'t reveal if email exists)', '4a. Link expired (>1 hour) → "This link has expired, request a new one"', '7a. Passwords don\'t match → "Passwords must match" error'],
+    tests:['Main flow — valid email, click link, set new password → success', 'Exc 3a — unregistered email → generic message (not "email not found")', 'Exc 4a — open expired link → clear expiry message + new request link', 'Security: old password rejected after reset', 'Security: reset link is single-use — second click → "already used"', 'Security: cannot reuse the same password (if policy requires)']
+  },
+];
+
+const ucContainer = document.getElementById('uc-container');
+useCases.forEach((uc, i) => {
+  const wrap = document.createElement('div'); wrap.className = 'uc-item';
+  const head = document.createElement('div'); head.className = 'uc-head';
+  head.innerHTML = `<span class="uc-id">${uc.id}</span><span class="uc-title">${uc.title}</span><span style="font-size:0.78rem;color:var(--muted);font-family:var(--font-mono);margin-right:8px">Actor: ${uc.actor}</span><span class="uc-arrow" id="uca-${i}">▼</span>`;
+  const body = document.createElement('div'); body.className = 'uc-body';
+  body.innerHTML = `
+    <div class="uc-grid">
+      <div class="uc-col">
+        <h4>Preconditions</h4>
+        <ul>${uc.pre.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <h4 style="margin-top:14px;color:var(--accent)">Main Flow (happy path)</h4>
+        <ol>${uc.main.map(m=>`<li>${m}</li>`).join('')}</ol>
+        <h4 style="margin-top:14px;color:var(--green)">Postconditions</h4>
+        <ul>${uc.post.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="uc-col">
+        <h4>Alternative Flows</h4>
+        <ul>${uc.alt.map(a=>`<li>${a}</li>`).join('')}</ul>
+        <h4 style="margin-top:14px;color:var(--red)">Exception Flows</h4>
+        <ul>${uc.exc.map(e=>`<li>${e}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="uc-alt">
+      <h4>Test Cases Derived From This Use Case</h4>
+      <ul style="font-size:0.82rem">${uc.tests.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>`;
+  head.onclick = () => {
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.uc-body.open').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.uc-arrow').forEach(a => a.style.transform = '');
+    if (!isOpen) { body.classList.add('open'); document.getElementById('uca-'+i).style.transform='rotate(180deg)'; }
+  };
+  wrap.appendChild(head); wrap.appendChild(body); ucContainer.appendChild(wrap);
+});
+
+// ── CHECKLIST ──────────────────────────────────────
+const clItems = [
+  // EP
+  'EP: Identified all valid partitions for each input field',
+  'EP: Identified all invalid partitions (including null/empty)',
+  'EP: Created one test case per partition (not per value)',
+  'EP: Confirmed tests cover both happy path and error paths',
+  // BVA
+  'BVA: Identified all numeric/length boundaries (min and max)',
+  'BVA: Created test for min−1 (just below lower boundary)',
+  'BVA: Created test for min (at lower boundary)',
+  'BVA: Created test for min+1 (just above lower boundary)',
+  'BVA: Created test for max−1 (just below upper boundary)',
+  'BVA: Created test for max (at upper boundary)',
+  'BVA: Created test for max+1 (just above upper boundary)',
+  // Decision Table
+  'DT: Listed all conditions (inputs/rules) for the feature',
+  'DT: Calculated total rules (2^N for N binary conditions)',
+  'DT: Completed all rows with correct Y/N combinations',
+  'DT: Defined the expected action for each rule combination',
+  'DT: Created one test case per column (rule)',
+  // State Transition
+  'STT: Drew/described the complete state diagram',
+  'STT: Listed all valid transitions (from → event → to)',
+  'STT: Created test for each valid transition',
+  'STT: Created tests for invalid transitions (wrong state for event)',
+  'STT: Verified terminal states have no further transitions',
+  // Use Case
+  'UCT: Documented use case with actor, pre/postconditions',
+  'UCT: Created test case for the complete main flow',
+  'UCT: Created test cases for each alternative flow',
+  'UCT: Created test cases for each exception/error flow',
+];
+
+const clList = document.getElementById('cl-list');
+const clSections = [
+  { label:'Equivalence Partitioning', count:4 },
+  { label:'Boundary Value Analysis', count:7 },
+  { label:'Decision Table', count:5 },
+  { label:'State Transition', count:5 },
+  { label:'Use Case Testing', count:4 },
+];
+let itemIdx = 0;
+let checked = new Set();
+clSections.forEach(sec => {
+  const secLabel = document.createElement('div');
+  secLabel.style.cssText = 'font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);padding:12px 0 4px;';
+  secLabel.textContent = sec.label;
+  clList.appendChild(secLabel);
+  for (let j = 0; j < sec.count; j++) {
+    const i = itemIdx++;
+    const li = document.createElement('li'); li.className = 'ci';
+    li.innerHTML = `<div class="cbox" id="cb-${i}"></div><span>${clItems[i]}</span>`;
+    li.onclick = () => {
+      if (checked.has(i)) { checked.delete(i); li.classList.remove('done'); document.getElementById('cb-'+i).textContent=''; }
+      else { checked.add(i); li.classList.add('done'); document.getElementById('cb-'+i).textContent='✓'; }
+      const n=checked.size, t=clItems.length;
+      document.getElementById('cl-label').textContent=`${n} / ${t} completed`;
+      document.getElementById('cl-prog').style.width=`${Math.round(n/t*100)}%`;
+    };
+    clList.appendChild(li);
+  }
+});
+
+function resetCl() {
+  checked.clear();
+  document.querySelectorAll('.ci').forEach(li => { li.classList.remove('done'); li.querySelector('.cbox').textContent=''; });
+  document.getElementById('cl-label').textContent=`0 / ${clItems.length} completed`;
+  document.getElementById('cl-prog').style.width='0%';
+}
+</script>
+</body>
+</html>

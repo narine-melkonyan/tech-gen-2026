@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navigation & API Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0c0d0f;
+  --surface:   #131416;
+  --card:      #1a1c1f;
+  --border:    #2a2d31;
+  --text:      #f0ede8;
+  --muted:     #6b6f76;
+  --accent:    #f0a500;
+  --accent-dim:#3d2c00;
+  --green:     #22c55e;
+  --green-dim: #0a2010;
+  --red:       #ef4444;
+  --red-dim:   #200a0a;
+  --amber:     #f59e0b;
+  --amber-dim: #2d1b00;
+  --blue:      #3b82f6;
+  --blue-dim:  #0f2744;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --r:         10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(240,165,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,165,0,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+/* ── PAGE SHELL ───────────────────────────── */
+.shell {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ──────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+
+.brand-wrap { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
+.brand-dot-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.bdot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.brand-label { font-family: var(--font-head); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.brand-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
+.brand-title span { color: var(--accent); }
+
+.nav-section { padding: 20px 16px 8px; }
+.nav-section-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 0 8px; margin-bottom: 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px;
+  font-size: 0.85rem; color: var(--muted);
+  cursor: pointer; transition: all 0.18s;
+  margin-bottom: 2px; border: 1px solid transparent;
+}
+.nav-item:hover { background: var(--card); color: var(--text); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(240,165,0,0.2); }
+.nav-item.active .nav-icon { color: var(--accent); }
+.nav-icon { font-size: 0.9rem; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: 0.65rem; padding: 1px 6px;
+  border-radius: 10px; font-family: var(--font-mono);
+}
+.nb-new { background: var(--accent-dim); color: var(--accent); }
+.nb-bug { background: var(--red-dim); color: var(--red); }
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem; color: var(--muted);
+  line-height: 1.6;
+}
+.sidebar-footer code { background: var(--card); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-size: 0.7rem; }
+
+/* ── MAIN CONTENT ─────────────────────────── */
+.main { padding: 40px 48px; max-width: 860px; }
+
+.page-header { margin-bottom: 36px; }
+.page-header h1 { font-family: var(--font-head); font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.page-header h1 span { color: var(--accent); }
+.page-header p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+/* Sections */
+.section { display: none; }
+.section.active { display: block; }
+
+h2 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+h3 { font-family: var(--font-head); font-size: 0.95rem; font-weight: 700; color: var(--accent); margin: 24px 0 10px; }
+h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+p  { color: #94a3b8; font-size: 0.88rem; line-height: 1.7; margin-bottom: 12px; }
+ul, ol { color: #94a3b8; font-size: 0.88rem; line-height: 1.8; padding-left: 20px; margin-bottom: 12px; }
+li { margin-bottom: 4px; }
+code { font-family: var(--font-mono); font-size: 0.8rem; background: var(--card); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+strong { color: var(--text); font-weight: 600; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; margin-bottom: 16px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+.tip  { background: var(--blue-dim); border-left: 3px solid var(--blue); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #93c5fd; line-height: 1.65; }
+.warn { background: var(--amber-dim); border-left: 3px solid var(--amber); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #fcd34d; line-height: 1.65; }
+.danger { background: var(--red-dim); border-left: 3px solid var(--red); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #fca5a5; line-height: 1.65; }
+.success { background: var(--green-dim); border-left: 3px solid var(--green); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 0.86rem; color: #86efac; line-height: 1.65; }
+
+.code-block {
+  background: #050810; border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 18px; font-family: var(--font-mono); font-size: 0.8rem;
+  color: #a5f3fc; line-height: 1.9; margin: 10px 0; overflow-x: auto; white-space: pre;
+}
+.code-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 5px; }
+.hl-k { color: #f472b6; }
+.hl-s { color: #86efac; }
+.hl-c { color: #475569; font-style: italic; }
+.hl-n { color: #c4b5fd; }
+.hl-h { color: #fbbf24; }
+
+/* ── TABLE ────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 14px 0; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #1a0f3d; color: #a78bfa; padding: 10px 14px; text-align: left; font-size: 0.8rem; font-weight: 600; }
+td { padding: 10px 14px; font-size: 0.83rem; border-bottom: 1px solid var(--border); vertical-align: top; color: #cbd5e1; }
+tr:hover td { background: #131416; }
+
+/* ── BADGE ────────────────────────────────── */
+.badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; font-family: var(--font-mono); }
+.b-green  { background: var(--green-dim); color: var(--green); }
+.b-red    { background: var(--red-dim);   color: var(--red); }
+.b-amber  { background: var(--amber-dim); color: var(--amber); }
+.b-blue   { background: var(--blue-dim);  color: #93c5fd; }
+.b-gray   { background: var(--card);      color: var(--muted); }
+.b-purple { background: #1a0f3d;          color: #a78bfa; }
+.b-accent { background: var(--accent-dim);color: var(--accent); }
+
+/* ── FLOW STEPS ───────────────────────────── */
+.flow-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); margin-bottom: 8px; cursor: pointer;
+  transition: border-color 0.18s;
+}
+.flow-step:hover { border-color: var(--accent); }
+.flow-step.open  { border-color: var(--blue); }
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.step-body { flex: 1; }
+.step-body h4 { margin-bottom: 3px; }
+.step-detail { font-size: 0.83rem; color: var(--muted); line-height: 1.6; margin-top: 8px; display: none; }
+.step-detail.open { display: block; }
+.step-arrow { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; }
+
+/* ── NAV DEMO ─────────────────────────────── */
+.nav-demo { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin: 14px 0; }
+.demo-bar {
+  display: flex; align-items: center; gap: 0;
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 0 16px; overflow-x: auto;
+}
+.demo-brand { font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; padding: 14px 0; margin-right: 24px; color: var(--accent); flex-shrink: 0; }
+.demo-link {
+  padding: 14px 14px; font-size: 0.83rem; color: var(--muted);
+  border-bottom: 2px solid transparent; cursor: pointer;
+  transition: color 0.15s; white-space: nowrap; flex-shrink: 0;
+}
+.demo-link:hover { color: var(--text); }
+.demo-link.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.demo-link.broken { color: var(--red); text-decoration: line-through; cursor: not-allowed; opacity: 0.7; }
+.demo-link.ext::after { content: "↗"; font-size: 0.65rem; margin-left: 3px; opacity: 0.5; }
+.demo-content { padding: 24px 20px; min-height: 110px; }
+.demo-page { display: none; }
+.demo-page.active { display: block; }
+
+/* ── STATUS ROWS ──────────────────────────── */
+.status-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); margin-bottom: 8px; cursor: pointer;
+  transition: border-color 0.18s;
+}
+.status-row:hover { border-color: var(--muted); }
+.status-row.open { border-color: var(--accent); }
+.sdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.s-code { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; min-width: 42px; }
+.s-name { font-size: 0.87rem; flex: 1; }
+.s-detail {
+  background: #050810; border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; margin: 0 0 8px; display: none;
+}
+.s-detail.open { display: block; }
+.s-detail p { font-size: 0.83rem; color: var(--muted); margin-bottom: 6px; }
+.s-detail strong { color: var(--text); }
+
+/* ── BUG ITEMS ────────────────────────────── */
+.bug-item { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 12px; }
+.bug-head { display: flex; align-items: center; gap: 10px; padding: 13px 16px; cursor: pointer; background: var(--card); transition: background 0.15s; }
+.bug-head:hover { background: #1e2023; }
+.bug-sev { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; }
+.sev-h { background: var(--red-dim); color: var(--red); }
+.sev-m { background: var(--amber-dim); color: var(--amber); }
+.sev-l { background: var(--green-dim); color: var(--green); }
+.bug-title { font-size: 0.87rem; font-weight: 600; flex: 1; }
+.bug-tag { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); }
+.bug-arrow { font-size: 0.75rem; color: var(--muted); transition: transform 0.2s; }
+.bug-body { display: none; padding: 16px; border-top: 1px solid var(--border); background: var(--surface); }
+.bug-body.open { display: block; }
+.bug-body p { font-size: 0.83rem; margin-bottom: 6px; }
+.bug-code { background: #050810; border-radius: 6px; padding: 10px 14px; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.8; margin: 6px 0; overflow-x: auto; white-space: pre; }
+.bc-bad  { border-left: 3px solid var(--red);   color: #fca5a5; }
+.bc-good { border-left: 3px solid var(--green); color: #86efac; }
+
+/* ── LINK TYPE ROWS ───────────────────────── */
+.link-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px; border-radius: 8px; border: 1px solid var(--border);
+  margin-bottom: 8px; background: var(--card); font-size: 0.85rem;
+}
+.link-type { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); min-width: 90px; }
+
+/* ── CHECKLIST ────────────────────────────── */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.ci {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);
+  cursor: pointer; font-size: 0.86rem; background: var(--card);
+  transition: border-color 0.15s;
+}
+.ci:hover { border-color: var(--muted); }
+.ci.done { background: var(--green-dim); border-color: rgba(34,197,94,0.3); color: #86efac; }
+.cbox { width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+.ci.done .cbox { background: var(--green); border-color: var(--green); color: var(--green-dim); }
+.prog-bar { height: 5px; background: var(--card); border-radius: 10px; overflow: hidden; margin: 8px 0; }
+.prog-fill { height: 100%; background: var(--green); border-radius: 10px; transition: width 0.3s; }
+
+/* ── SIMULATOR ────────────────────────────── */
+.sim-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.sim-btn {
+  padding: 8px 16px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text); font-family: var(--font-body);
+  font-size: 0.83rem; cursor: pointer; transition: all 0.15s;
+}
+.sim-btn:hover { border-color: var(--muted); }
+.sim-btn.primary { background: var(--accent); color: #0c0d0f; border-color: var(--accent); font-weight: 600; }
+.sim-btn.primary:hover { opacity: 0.85; }
+.log-area { font-family: var(--font-mono); font-size: 0.75rem; background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+.log-area::-webkit-scrollbar { width: 3px; }
+.log-area::-webkit-scrollbar-thumb { background: var(--border); }
+.log-e { display: flex; gap: 10px; }
+.log-t { color: var(--muted); flex-shrink: 0; }
+.log-ok   { color: var(--green); }
+.log-err  { color: var(--red); }
+.log-warn { color: var(--amber); }
+.log-info { color: #93c5fd; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; text-align: center; }
+.metric-val { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+.metric-lbl { font-size: 0.75rem; color: var(--muted); }
+
+/* ── RESPONSIVE ───────────────────────────── */
+@media (max-width: 800px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .main { padding: 24px 20px; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .demo-bar { gap: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <aside class="sidebar">
+    <div class="brand-wrap">
+      <div class="brand-dot-row"><div class="bdot"></div><span class="brand-label">Workshop · Testing</span></div>
+      <div class="brand-title">Nav, Links<br><span>&amp; APIs</span></div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Navigation</div>
+      <div class="nav-item active" onclick="showSection('lifecycle')">
+        <span class="nav-icon">🔄</span> Request Lifecycle
+      </div>
+      <div class="nav-item" onclick="showSection('navdemo')">
+        <span class="nav-icon">🧭</span> Nav Demo
+      </div>
+      <div class="nav-item" onclick="showSection('linktypes')">
+        <span class="nav-icon">🔗</span> Link Types
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">API</div>
+      <div class="nav-item" onclick="showSection('statuses')">
+        <span class="nav-icon">📡</span> Status Codes
+      </div>
+      <div class="nav-item" onclick="showSection('simulator')">
+        <span class="nav-icon">⚡</span> API Simulator <span class="nav-badge nb-new">live</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Testing</div>
+      <div class="nav-item" onclick="showSection('bugs')">
+        <span class="nav-icon">🐛</span> Common Bugs <span class="nav-badge nb-bug">9</span>
+      </div>
+      <div class="nav-item" onclick="showSection('checklist')">
+        <span class="nav-icon">✅</span> Test Checklist
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      Connects to your Node.js API at<br>
+      <code>http://localhost:3000</code><br><br>
+      Run <code>npm run dev</code> in your<br>
+      rest-api project to start the server.
+    </div>
+  </aside>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <main class="main">
+
+    <!-- ── 1. REQUEST LIFECYCLE ── -->
+    <div class="section active" id="s-lifecycle">
+      <div class="page-header">
+        <h1>Request <span>Lifecycle</span></h1>
+        <p>Everything that happens between clicking a link and seeing the page. Click each step to expand the full explanation.</p>
+      </div>
+
+      <div id="flow-container"></div>
+
+      <div class="tip">💡 <strong>DevTools shortcut:</strong> Press <code>F12</code> → Network tab → check "Preserve log" → navigate around. You can see every step of this cycle in real time for every request your browser makes.</div>
+
+      <h3>SPA vs MPA Navigation</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4>Multi-Page App (MPA)</h4>
+          <p>Every link click triggers a full HTTP request cycle. The browser fetches a new HTML page from the server. Simple, reliable, great for SEO. Used by: traditional websites, e-commerce, blogs.</p>
+          <div class="code-block"><span class="hl-c">/* Full page load on every nav */</span>
+<span class="hl-k">GET</span> /products → <span class="hl-n">200 OK</span> → new HTML
+<span class="hl-k">GET</span> /cart     → <span class="hl-n">200 OK</span> → new HTML</div>
+        </div>
+        <div class="card">
+          <h4>Single-Page App (SPA)</h4>
+          <p>JS intercepts link clicks. Only data (JSON) is fetched, the DOM is updated in place. Faster after first load, but requires careful handling of browser history, back button, and deep links.</p>
+          <div class="code-block"><span class="hl-c">/* JS router handles navigation */</span>
+<span class="hl-c">// No HTTP request — just re-render</span>
+router.push(<span class="hl-s">'/products'</span>);
+<span class="hl-k">GET</span> /api/products → <span class="hl-n">200</span> JSON only</div>
+        </div>
+      </div>
+
+      <h3>DNS in Detail</h3>
+      <p>DNS (Domain Name System) converts a human-readable domain like <code>example.com</code> into a machine-readable IP address like <code>93.184.216.34</code>. This lookup happens in layers, each with its own cache:</p>
+      <div class="table-wrap"><table>
+        <tr><th>Layer</th><th>Cache TTL</th><th>What happens</th></tr>
+        <tr><td>Browser DNS cache</td><td>~60s</td><td>Fastest — browser remembers recent lookups</td></tr>
+        <tr><td>OS DNS cache</td><td>varies</td><td>Second check — OS-level resolver</td></tr>
+        <tr><td>ISP Resolver</td><td>varies</td><td>Your internet provider's DNS server</td></tr>
+        <tr><td>Root DNS servers</td><td>permanent</td><td>13 root servers that know where .com, .org, etc. live</td></tr>
+        <tr><td>Authoritative DNS</td><td>set by owner</td><td>The actual DNS record with your IP address</td></tr>
+      </table></div>
+      <div class="warn">⚠️ <strong>Testing tip:</strong> Always clear your DNS cache when testing domain changes. In Chrome: <code>chrome://net-internals/#dns</code> → click "Clear host cache".</div>
+    </div>
+
+    <!-- ── 2. NAV DEMO ── -->
+    <div class="section" id="s-navdemo">
+      <div class="page-header">
+        <h1>Navigation <span>Demo</span></h1>
+        <p>A working simulation of a real application navbar with all navigation states. Click each link to see how it behaves and what testers should check.</p>
+      </div>
+
+      <div class="nav-demo">
+        <div class="demo-bar">
+          <span class="demo-brand">MyApp</span>
+          <span class="demo-link active" onclick="navTo('home',this)">Home</span>
+          <span class="demo-link" onclick="navTo('products',this)">Products</span>
+          <span class="demo-link" onclick="navTo('dashboard',this)">Dashboard</span>
+          <span class="demo-link ext" onclick="navTo('external',this)">Docs ↗</span>
+          <span class="demo-link" onclick="navTo('about',this)">About</span>
+          <span class="demo-link broken" onclick="navTo('broken',this)" title="This page was deleted">Deleted</span>
+        </div>
+        <div class="demo-content">
+          <div class="demo-page active" id="dp-home">
+            <h4>🏠 Home Page</h4>
+            <p style="margin-top:6px">Welcome! Notice the <strong>active state</strong> — "Home" has a bottom border highlight. Testers verify: active class updates on navigation, the correct item is highlighted, and no two items are active simultaneously.</p>
+          </div>
+          <div class="demo-page" id="dp-products">
+            <h4>📦 Products Page</h4>
+            <p style="margin-top:6px">Product listing. Testers check: page title updates in the browser tab, the URL changes to <code>/products</code>, the back button returns to Home, and deep-linking <code>http://localhost/products</code> loads this page directly.</p>
+          </div>
+          <div class="demo-page" id="dp-dashboard">
+            <h4>🔒 Dashboard (protected route)</h4>
+            <p style="margin-top:6px">This route requires authentication. If not logged in, clicking Dashboard should redirect to <code>/login?redirect=/dashboard</code>, NOT show a blank page or a 500 error. Testers verify the redirect works AND that after logging in you land here, not on the homepage.</p>
+          </div>
+          <div class="demo-page" id="dp-external">
+            <h4 style="color:#93c5fd">↗ External Link — opened in new tab</h4>
+            <p style="margin-top:6px">External links must use <code>target="_blank"</code> AND <code>rel="noopener noreferrer"</code>. Without <code>noopener</code>, the opened page can access <code>window.opener</code> and redirect your app to a phishing site. Test: original tab still shows MyApp after click.</p>
+            <div class="danger" style="margin-top:10px">🔴 Security risk: <code>&lt;a href="https://evil.com" target="_blank"&gt;</code> — missing rel attribute</div>
+          </div>
+          <div class="demo-page" id="dp-about">
+            <h4>ℹ️ About Page</h4>
+            <p style="margin-top:6px">Static content page. Check: heading hierarchy (H1→H2 in correct order), meta description present, canonical URL set, no broken images, and all in-page anchor links (#section) scroll to the right element.</p>
+          </div>
+          <div class="demo-page" id="dp-broken">
+            <h4 style="color:var(--red)">💥 404 — Page Not Found</h4>
+            <p style="margin-top:6px">This page was deleted. Testers verify: the server actually returns HTTP 404 (check DevTools Network tab — not 200!), a friendly error page is shown (not a white screen), there's a link back to Home, and the page title says "Not Found".</p>
+            <div class="danger" style="margin-top:10px">Common bug: SPA returns <strong>200 OK</strong> for this URL even though the page doesn't exist — because the server always serves <code>index.html</code>. The HTTP status must be 404.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>What testers check on every navigation</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4>Visual checks</h4>
+          <ul>
+            <li>Active nav item is correctly highlighted</li>
+            <li>No two items highlighted at once</li>
+            <li>Page title in browser tab updates</li>
+            <li>Breadcrumbs (if any) reflect current page</li>
+            <li>Scroll position resets to top on navigation</li>
+            <li>Loading state shown during navigation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Functional checks</h4>
+          <ul>
+            <li>URL changes to match the page</li>
+            <li>Browser back/forward buttons work</li>
+            <li>Pasting the URL directly loads correct page</li>
+            <li>Refresh keeps you on the same page</li>
+            <li>Protected routes redirect to login</li>
+            <li>404 page shown for unknown URLs</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Browser History API (for SPAs)</h3>
+      <p>SPAs manage navigation manually using the History API. Understanding this helps testers know what to look for.</p>
+      <div class="code-block"><span class="hl-c">// Push a new entry to browser history (adds to back stack)</span>
+window.history.<span class="hl-k">pushState</span>({page: <span class="hl-s">'products'</span>}, <span class="hl-s">''</span>, <span class="hl-s">'/products'</span>);
+
+<span class="hl-c">// Replace current entry (doesn't add to back stack)</span>
+window.history.<span class="hl-k">replaceState</span>({page: <span class="hl-s">'home'</span>}, <span class="hl-s">''</span>, <span class="hl-s">'/'</span>);
+
+<span class="hl-c">// Listen for back/forward button clicks</span>
+window.<span class="hl-k">addEventListener</span>(<span class="hl-s">'popstate'</span>, (event) => {
+  <span class="hl-c">// re-render based on event.state or window.location</span>
+  renderPage(window.location.pathname);
+});</div>
+    </div>
+
+    <!-- ── 3. LINK TYPES ── -->
+    <div class="section" id="s-linktypes">
+      <div class="page-header">
+        <h1>Link <span>Types</span></h1>
+        <p>Every type of link behaves differently. Each needs specific test cases.</p>
+      </div>
+
+      <div class="link-row"><span class="link-type">internal</span><code>&lt;a href="/products"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Same app, same tab. Most common type.</span><span class="badge b-gray">same tab</span></div>
+      <div class="link-row"><span class="link-type">external</span><code>&lt;a href="https://..." target="_blank" rel="noopener noreferrer"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Other website.</span><span class="badge b-blue">new tab</span></div>
+      <div class="link-row"><span class="link-type">anchor</span><code>&lt;a href="#section-id"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Scroll to element with matching id.</span><span class="badge b-gray">same page</span></div>
+      <div class="link-row"><span class="link-type">mailto</span><code>&lt;a href="mailto:hello@example.com"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Opens email client.</span><span class="badge b-purple">opens app</span></div>
+      <div class="link-row"><span class="link-type">tel</span><code>&lt;a href="tel:+15550001234"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Opens phone dialer (mobile).</span><span class="badge b-purple">opens app</span></div>
+      <div class="link-row"><span class="link-type">download</span><code>&lt;a href="/report.pdf" download="report"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Forces file download.</span><span class="badge b-amber">download</span></div>
+      <div class="link-row"><span class="link-type">301 redirect</span><code>Location: /new-url</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Server-side, browser follows automatically.</span><span class="badge b-gray">transparent</span></div>
+      <div class="link-row"><span class="link-type">javascript:</span><code>&lt;a href="javascript:void(0)"&gt;</code><span style="flex:1;font-size:0.83rem;color:var(--muted);margin:0 12px">Runs JS — avoid this pattern!</span><span class="badge b-red">avoid</span></div>
+
+      <h3>Security: what to check on links</h3>
+      <div class="table-wrap"><table>
+        <tr><th>Check</th><th>Why</th><th>Test</th></tr>
+        <tr><td><code>rel="noopener"</code> on <code>_blank</code></td><td>Prevents reverse tabnapping attack</td><td>Open external link, check opener tab wasn't redirected</td></tr>
+        <tr><td>No <code>javascript:</code> hrefs</td><td>XSS vector — executes arbitrary JS</td><td>Search codebase for <code>href="javascript:</code></td></tr>
+        <tr><td>No open redirect via <code>?redirect=</code></td><td>Attacker sends users to phishing sites</td><td>Try <code>/login?redirect=https://evil.com</code> — should be blocked</td></tr>
+        <tr><td>All links use HTTPS</td><td>Mixed content breaks HTTPS pages</td><td>Check browser console for "Mixed Content" warnings</td></tr>
+        <tr><td>Download links serve correct MIME type</td><td>Wrong type can execute code in browser</td><td>Check Content-Type response header matches file type</td></tr>
+      </table></div>
+
+      <h3>Testing anchor (#) links</h3>
+      <p>Anchor links are deceptively tricky, especially in SPAs where content loads asynchronously.</p>
+      <div class="code-block"><span class="hl-c">// Problem: content isn't loaded yet when scroll fires</span>
+document.querySelector(<span class="hl-s">'#section'</span>)?.scrollIntoView(); <span class="hl-c">// null = no scroll</span>
+
+<span class="hl-c">// Fix: scroll AFTER content is rendered</span>
+<span class="hl-k">setTimeout</span>(() => {
+  document.querySelector(window.location.hash)
+    ?.scrollIntoView({ behavior: <span class="hl-s">'smooth'</span> });
+}, <span class="hl-n">100</span>); <span class="hl-c">// give the DOM time to render</span></div>
+    </div>
+
+    <!-- ── 4. STATUS CODES ── -->
+    <div class="section" id="s-statuses">
+      <div class="page-header">
+        <h1>API Status <span>Codes</span></h1>
+        <p>Every HTTP response starts with a status code. Click any row to see when it's returned, what headers it sends, and how to test it in your Node.js project.</p>
+      </div>
+
+      <div id="status-container"></div>
+
+      <div class="success" style="margin-top:20px">✅ Quick memory rule: <strong>2xx = it worked · 3xx = go somewhere else · 4xx = your fault · 5xx = server's fault</strong></div>
+
+      <h3>Status codes in your Express API</h3>
+      <div class="code-block"><span class="hl-c">// Always set status BEFORE sending response</span>
+res.<span class="hl-k">status</span>(<span class="hl-n">201</span>).json({ success: <span class="hl-k">true</span>, data: newProduct });
+
+<span class="hl-c">// Common mistake — defaults to 200, even for errors!</span>
+<span class="hl-k">if</span> (!product) {
+  <span class="hl-k">return</span> res.json({ success: <span class="hl-k">false</span>, message: <span class="hl-s">'Not found'</span> }); <span class="hl-c">// BUG: sends 200</span>
+}
+
+<span class="hl-c">// Correct</span>
+<span class="hl-k">if</span> (!product) {
+  <span class="hl-k">return</span> res.<span class="hl-k">status</span>(<span class="hl-n">404</span>).json({ success: <span class="hl-k">false</span>, message: <span class="hl-s">'Not found'</span> });
+}</div>
+    </div>
+
+    <!-- ── 5. SIMULATOR ── -->
+    <div class="section" id="s-simulator">
+      <div class="page-header">
+        <h1>API <span>Simulator</span></h1>
+        <p>Simulate how your Node.js REST API should respond to different types of requests. Watch the live log and track request metrics.</p>
+      </div>
+
+      <div class="sim-btns">
+        <button class="sim-btn primary" onclick="sim('valid')">✓ Valid POST</button>
+        <button class="sim-btn" onclick="sim('missing')">Missing fields</button>
+        <button class="sim-btn" onclick="sim('notfound')">Unknown ID</button>
+        <button class="sim-btn" onclick="sim('noauth')">No auth token</button>
+        <button class="sim-btn" onclick="sim('forbidden')">Wrong role</button>
+        <button class="sim-btn" onclick="sim('ratelimit')">Rate limit hit</button>
+        <button class="sim-btn" onclick="sim('crash')">Server crash</button>
+        <button class="sim-btn" onclick="sim('timeout')">Timeout</button>
+      </div>
+
+      <div class="code-label">Request / Response Log</div>
+      <div class="log-area" id="sim-log">
+        <div class="log-e"><span class="log-t">00:00:000</span><span class="log-info">Simulator ready — click a button above to fire a request</span></div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="metric-val" id="m-total" style="color:var(--text)">0</div><div class="metric-lbl">total requests</div></div>
+        <div class="metric"><div class="metric-val" id="m-ok" style="color:var(--green)">0</div><div class="metric-lbl">success (2xx)</div></div>
+        <div class="metric"><div class="metric-val" id="m-err" style="color:var(--red)">0</div><div class="metric-lbl">errors (4xx/5xx)</div></div>
+      </div>
+
+      <h3 style="margin-top:24px">How to test status codes with curl</h3>
+      <div class="code-block"><span class="hl-c"># Test a successful GET</span>
+curl -s http://localhost:3000/api/products | json_pp
+
+<span class="hl-c"># Test POST with missing fields (should return 400)</span>
+curl -s -X POST http://localhost:3000/api/products \
+  -H <span class="hl-s">"Content-Type: application/json"</span> \
+  -d <span class="hl-s">'{"name": "Test"}'</span>
+
+<span class="hl-c"># See the status code only (-o /dev/null = discard body, -w = write format)</span>
+curl -o /dev/null -s -w <span class="hl-s">"%{http_code}\n"</span> http://localhost:3000/api/products/99999
+
+<span class="hl-c"># Follow redirects and show full headers</span>
+curl -L -D - http://localhost:3000/old-path</div>
+    </div>
+
+    <!-- ── 6. BUGS ── -->
+    <div class="section" id="s-bugs">
+      <div class="page-header">
+        <h1>Common <span>Bugs</span></h1>
+        <p>The most frequently found navigation and API bugs. Click each to see the symptom, root cause, and fix with code examples.</p>
+      </div>
+      <div id="bug-container"></div>
+    </div>
+
+    <!-- ── 7. CHECKLIST ── -->
+    <div class="section" id="s-checklist">
+      <div class="page-header">
+        <h1>Test <span>Checklist</span></h1>
+        <p>Full checklist covering navigation, links, and API testing. Click each item to mark it done.</p>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:0.83rem;color:var(--muted)" id="cl-label">0 / 24 completed</span>
+        <button class="sim-btn" onclick="resetCl()" style="font-size:0.78rem;padding:5px 12px">Reset all</button>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="cl-prog" style="width:0%"></div></div>
+      <ul class="checklist" id="cl-list" style="margin-top:14px"></ul>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<script>
+// ── SECTION SWITCHER ──────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── FLOW STEPS ────────────────────────────────────────
+const steps = [
+  { label:'User clicks link', color:'#1d4ed8', bg:'#0f2744',
+    detail:'Browser intercepts the click. In an SPA, the JavaScript router handles it — no HTTP request is made, just a DOM re-render and history.pushState(). In a traditional MPA, the browser starts the full request cycle below.' },
+  { label:'DNS resolution', color:'#16a34a', bg:'#0a2010',
+    detail:'Browser checks its DNS cache (TTL ~60s). If not cached: asks the OS → ISP resolver → root DNS → authoritative DNS server. Result: an IP address like 93.184.216.34. Test tip: chrome://net-internals/#dns to flush DNS cache and simulate a fresh lookup.' },
+  { label:'TCP connection', color:'#7c3aed', bg:'#1a0f3d',
+    detail:'Browser opens a TCP connection using a 3-way handshake: SYN → SYN-ACK → ACK. For HTTPS (port 443), a TLS handshake follows: certificate exchange, cipher negotiation, session key agreement. HTTP/2 reuses the same connection for multiple requests.' },
+  { label:'HTTP request sent', color:'#b45309', bg:'#2d1b00',
+    detail:'Browser sends the request: method (GET/POST/…), path (/products), HTTP version, and headers (Host, Accept, Cookie, User-Agent, Authorization…). For POST/PUT, the request body follows. All visible in DevTools → Network → Headers tab.' },
+  { label:'Server processes', color:'#be185d', bg:'#2d0a1f',
+    detail:'Express receives the request and runs it through middleware chain: CORS check → rate limiter → auth check → body parser → route handler. The handler may query a database, call other services, validate input, and apply business logic. Time here = Time to First Byte (TTFB).' },
+  { label:'HTTP response', color:'#0369a1', bg:'#0c2233',
+    detail:'Server sends: status line (HTTP/1.1 200 OK), response headers (Content-Type, Set-Cookie, Cache-Control, ETag…), then the body (HTML, JSON, binary). For 3xx, no body — just Location header. For 204 No Content, no body either.' },
+  { label:'Browser renders', color:'#059669', bg:'#04150c',
+    detail:'Browser parses the HTML, builds the DOM tree, downloads sub-resources (CSS, JS, images — each triggers new requests!), executes JavaScript, applies styles, and paints pixels. For SPAs, JS completely rewrites the DOM. Testers verify: page looks correct AND browser console shows zero errors.' },
+];
+
+const fc = document.getElementById('flow-container');
+steps.forEach((s, i) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'flow-step';
+  wrap.innerHTML = `
+    <div class="step-num" style="background:${s.bg};color:${s.color};border:1px solid ${s.color}40">${i+1}</div>
+    <div class="step-body">
+      <h4>${s.label}</h4>
+      <div class="step-detail" id="sd-${i}">${s.detail}</div>
+    </div>
+    <span class="step-arrow" id="sa-${i}">▼</span>`;
+  wrap.onclick = () => {
+    const det = document.getElementById('sd-'+i);
+    const arr = document.getElementById('sa-'+i);
+    const isOpen = det.classList.contains('open');
+    document.querySelectorAll('.step-detail').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.flow-step').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.step-arrow').forEach(a => a.style.transform = '');
+    if (!isOpen) {
+      det.classList.add('open');
+      wrap.classList.add('open');
+      arr.style.transform = 'rotate(180deg)';
+    }
+  };
+  fc.appendChild(wrap);
+});
+
+// ── NAV DEMO ──────────────────────────────────────────
+function navTo(page, el) {
+  document.querySelectorAll('.demo-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.demo-page').forEach(p => p.classList.remove('active'));
+  if (page === 'broken') {
+    document.getElementById('dp-broken').classList.add('active');
+    return;
+  }
+  el.classList.add('active');
+  document.getElementById('dp-' + page).classList.add('active');
+}
+
+// ── STATUS CODES ──────────────────────────────────────
+const statuses = [
+  { code:'200', name:'OK',                  dot:'#22c55e', cat:'2xx', badge:'b-green',
+    when:'Any successful GET, HEAD, or non-creating request.',
+    headers:'Content-Type, Content-Length, Cache-Control, ETag',
+    body:'The requested resource — HTML, JSON object, array, file bytes.',
+    test:'Verify body contains exactly the right data — correct fields, correct values, no extras or missing fields. Check Content-Type matches what you requested (Accept header).',
+    node:'res.json({ success: true, data });  // status defaults to 200' },
+  { code:'201', name:'Created',             dot:'#22c55e', cat:'2xx', badge:'b-green',
+    when:'POST request that successfully created a new resource.',
+    headers:'Location: /api/products/42 — URL of the new resource',
+    body:'The newly created object including its generated ID and timestamps.',
+    test:'Check the Location header is present and correct. Do a GET on that URL — you should get the same object back.',
+    node:"res.status(201).json({ success: true, data: newItem });" },
+  { code:'204', name:'No Content',          dot:'#22c55e', cat:'2xx', badge:'b-green',
+    when:'DELETE or PUT/PATCH that succeeds but has nothing to return.',
+    headers:'No Content-Type (body must be empty)',
+    body:'Empty — no body at all. Sending a body with 204 is technically invalid.',
+    test:'Check response body is truly empty. Some HTTP clients break if they try to parse an empty body as JSON.',
+    node:'res.status(204).send();' },
+  { code:'301', name:'Moved Permanently',   dot:'#3b82f6', cat:'3xx', badge:'b-blue',
+    when:'Resource has permanently moved — HTTP→HTTPS upgrade, URL restructure.',
+    headers:'Location: https://new-url.com/path',
+    body:'Usually empty. Browsers follow the Location header automatically.',
+    test:'Check the new URL is reachable (not another redirect). Verify redirect chain is max 2 hops. Confirm browser updates its address bar.',
+    node:"res.redirect(301, '/new-path');" },
+  { code:'302', name:'Found (Temp Redirect)',dot:'#3b82f6', cat:'3xx', badge:'b-blue',
+    when:'Temporary redirect — login wall, A/B testing, maintenance page.',
+    headers:'Location: /login?redirect=/dashboard',
+    body:'Usually empty.',
+    test:'Verify redirect destination is correct. Check that after the redirect, the original URL still works.',
+    node:"res.redirect('/login');  // 302 is default" },
+  { code:'304', name:'Not Modified',        dot:'#3b82f6', cat:'3xx', badge:'b-blue',
+    when:'Client has cached version and server confirms it\'s still current.',
+    headers:'ETag or Last-Modified matches client\'s If-None-Match / If-Modified-Since',
+    body:'Empty — browser uses its cached copy. Saves bandwidth.',
+    test:'Send request with If-None-Match: "etag-value". Server should return 304 with no body. Browser should use cache.',
+    node:"if (req.headers['if-none-match'] === etag) return res.status(304).send();" },
+  { code:'400', name:'Bad Request',         dot:'#f59e0b', cat:'4xx', badge:'b-amber',
+    when:'Request is malformed — missing required fields, wrong JSON syntax, invalid data types.',
+    headers:'Content-Type: application/json',
+    body:'{ "success": false, "message": "Missing required fields: name, price" }',
+    test:'Submit empty body, missing required fields, wrong Content-Type, malformed JSON. Each should return 400 with a specific, actionable error message.',
+    node:"res.status(400).json({ success: false, message: 'Missing: ' + missing.join(', ') });" },
+  { code:'401', name:'Unauthorized',        dot:'#f59e0b', cat:'4xx', badge:'b-amber',
+    when:'No authentication provided, or token is expired / invalid / malformed.',
+    headers:'WWW-Authenticate: Bearer realm="api"',
+    body:'{ "success": false, "message": "Token expired" }',
+    test:'Test with: no Authorization header, expired JWT, malformed token, token with wrong signature. All must return 401.',
+    node:"res.status(401).json({ success: false, message: 'Unauthorized' });" },
+  { code:'403', name:'Forbidden',           dot:'#f59e0b', cat:'4xx', badge:'b-amber',
+    when:'User is authenticated but lacks permission for this specific resource or action.',
+    headers:'(no special headers)',
+    body:'{ "success": false, "message": "Insufficient permissions" }',
+    test:'Log in as a regular user, try to access an admin route. Must return 403 — not 401 (you ARE authenticated) and not 404.',
+    node:"res.status(403).json({ success: false, message: 'Forbidden' });" },
+  { code:'404', name:'Not Found',           dot:'#f59e0b', cat:'4xx', badge:'b-amber',
+    when:'URL path matches no route, or a specific record with that ID doesn\'t exist.',
+    headers:'(no special headers)',
+    body:'{ "success": false, "message": "Product 9999 not found" }',
+    test:'GET /api/products/9999 (non-existent ID). GET /api/unicorns (non-existent route). Both should return 404 with different messages.',
+    node:"res.status(404).json({ success: false, message: `Product ${req.params.id} not found` });" },
+  { code:'429', name:'Too Many Requests',   dot:'#ef4444', cat:'4xx', badge:'b-red',
+    when:'Client has exceeded the rate limit (e.g. 100 requests per minute per IP).',
+    headers:'Retry-After: 60, X-RateLimit-Limit: 100, X-RateLimit-Remaining: 0',
+    body:'{ "success": false, "message": "Rate limit exceeded. Retry in 60 seconds." }',
+    test:'Fire 101 rapid requests. The 101st should return 429. Check Retry-After header is present and correct.',
+    node:"// npm install express-rate-limit\nconst limiter = rateLimit({ windowMs: 60000, max: 100 });\napp.use('/api/', limiter);" },
+  { code:'500', name:'Internal Server Error',dot:'#ef4444', cat:'5xx', badge:'b-red',
+    when:'Unhandled exception, bug in code, database connection failed, null reference.',
+    headers:'Content-Type: application/json',
+    body:'{ "success": false, "message": "Internal server error" } — NEVER include stack trace in production!',
+    test:'Check 500 errors do NOT expose stack traces, file paths, or internal details in production. Check server logs capture the full error internally.',
+    node:"app.use((err, req, res, next) => {\n  console.error(err.stack); // log internally\n  const msg = process.env.NODE_ENV === 'production' ? 'Server error' : err.message;\n  res.status(500).json({ success: false, message: msg });\n});" },
+  { code:'503', name:'Service Unavailable', dot:'#ef4444', cat:'5xx', badge:'b-red',
+    when:'Server is overloaded, under maintenance, or a dependency (DB, 3rd party API) is down.',
+    headers:'Retry-After: 30',
+    body:'{ "success": false, "message": "Service temporarily unavailable" }',
+    test:'Shut down the database and make an API call. App should return 503 gracefully instead of hanging, timing out, or throwing a 500.',
+    node:"app.get('/health', async (req, res) => {\n  try { await db.ping(); res.json({ ok: true }) }\n  catch { res.status(503).json({ ok: false, reason: 'DB unreachable' }) }\n});" },
+];
+
+const sc = document.getElementById('status-container');
+statuses.forEach((s, i) => {
+  const row = document.createElement('div');
+  row.className = 'status-row';
+  row.innerHTML = `<span class="sdot" style="background:${s.dot}"></span><span class="s-code" style="color:${s.dot}">${s.code}</span><span class="s-name">${s.name}</span><span class="badge ${s.badge}">${s.cat}</span><span style="font-size:0.72rem;color:var(--muted);margin-left:auto">click ▸</span>`;
+  const det = document.createElement('div');
+  det.className = 's-detail';
+  det.innerHTML = `
+    <p><strong>When returned:</strong> ${s.when}</p>
+    <p><strong>Key headers:</strong> <code>${s.headers}</code></p>
+    <p><strong>Body example:</strong> ${s.body}</p>
+    <p><strong>How to test:</strong> ${s.test}</p>
+    <p style="margin-bottom:4px"><strong>Node.js / Express:</strong></p>
+    <div class="code-block" style="font-size:0.76rem;margin:0">${s.node}</div>`;
+  row.onclick = () => {
+    const isOpen = det.classList.contains('open');
+    document.querySelectorAll('.s-detail.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.status-row.open').forEach(r => r.classList.remove('open'));
+    if (!isOpen) { det.classList.add('open'); row.classList.add('open'); }
+  };
+  sc.appendChild(row); sc.appendChild(det);
+});
+
+// ── SIMULATOR ─────────────────────────────────────────
+let tot = 0, ok = 0, errs = 0;
+const scenarios = {
+  valid:     { code:201, label:'POST /api/products → 201 Created',         detail:'{ "success": true, "data": { "id": 42, "name": "Laptop Pro", "price": 1299.99 } }', cls:'log-ok',   isOk:true  },
+  missing:   { code:400, label:'POST /api/products → 400 Bad Request',     detail:'{ "success": false, "message": "Missing required fields: name, price" }',            cls:'log-warn', isOk:false },
+  notfound:  { code:404, label:'GET /api/products/9999 → 404 Not Found',   detail:'{ "success": false, "message": "Product 9999 not found" }',                          cls:'log-warn', isOk:false },
+  noauth:    { code:401, label:'GET /api/orders → 401 Unauthorized',       detail:'{ "success": false, "message": "No authorization token provided" }',                 cls:'log-warn', isOk:false },
+  forbidden: { code:403, label:'DELETE /api/admin → 403 Forbidden',        detail:'{ "success": false, "message": "Insufficient permissions" }',                        cls:'log-warn', isOk:false },
+  ratelimit: { code:429, label:'POST /api/products → 429 Too Many Requests',detail:'Headers: Retry-After: 60 | { "message": "Rate limit exceeded. Retry in 60s" }',     cls:'log-warn', isOk:false },
+  crash:     { code:500, label:'POST /api/products → 500 Internal Error',  detail:'{ "success": false, "message": "Internal server error" } ← stack hidden in prod',   cls:'log-err',  isOk:false },
+  timeout:   { code:503, label:'GET /api/products → 503 Service Unavail.', detail:'{ "success": false, "message": "Database connection timed out" } + Retry-After: 30', cls:'log-err',  isOk:false },
+};
+
+function ts() {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}.${String(n.getMilliseconds()).padStart(3,'0')}`;
+}
+function addLog(msg, cls) {
+  const log = document.getElementById('sim-log');
+  const e = document.createElement('div');
+  e.className = 'log-e';
+  e.innerHTML = `<span class="log-t">${ts()}</span><span class="${cls}">${msg}</span>`;
+  log.prepend(e);
+}
+
+function sim(type) {
+  const sc = scenarios[type];
+  tot++; document.getElementById('m-total').textContent = tot;
+  addLog(`→ Sending request...`, 'log-info');
+  setTimeout(() => {
+    if (sc.isOk) { ok++; document.getElementById('m-ok').textContent = ok; }
+    else { errs++; document.getElementById('m-err').textContent = errs; }
+    addLog(sc.label, sc.cls);
+    addLog(sc.detail, 'log-t');
+  }, Math.random() * 350 + 80);
+}
+
+// ── BUGS ──────────────────────────────────────────────
+const bugs = [
+  { sev:'h', title:'External links missing rel="noopener noreferrer"', tag:'security',
+    symptom:'Links with target="_blank" open new tabs but are missing the rel attribute.',
+    cause:'The opened page can access window.opener and redirect the original tab to a phishing site (reverse tabnapping attack).',
+    fix:'Always add rel="noopener noreferrer" to every link that has target="_blank".',
+    bad:'<a href="https://external.com" target="_blank">Docs</a>',
+    good:'<a href="https://external.com" target="_blank" rel="noopener noreferrer">Docs</a>' },
+  { sev:'h', title:'Open redirect via unvalidated ?redirect= parameter', tag:'security',
+    symptom:'Attacker sends /login?redirect=https://evil.com — after login, user is sent to evil.com.',
+    cause:'Server blindly trusts the redirect query parameter without validating it.',
+    fix:'Only allow relative paths (starting with /), or use a whitelist of allowed redirect URLs.',
+    bad:"// Anyone can set redirect to any URL\nres.redirect(req.query.redirect);",
+    good:"// Only allow relative paths\nconst safe = /^\\//;\nconst dest = safe.test(req.query.redirect) ? req.query.redirect : '/';\nres.redirect(dest);" },
+  { sev:'h', title:'API returns stack trace in production (500 errors)', tag:'api/security',
+    symptom:'500 error response body contains full Node.js stack trace with file paths.',
+    cause:'Error handler passes err.stack directly to the JSON response without checking NODE_ENV.',
+    fix:'Only return detailed errors in development. Return a generic message in production.',
+    bad:"app.use((err,req,res,next) => {\n  res.status(500).json({ error: err.stack }); // exposes internals!\n});",
+    good:"app.use((err,req,res,next) => {\n  const msg = process.env.NODE_ENV === 'production'\n    ? 'Internal server error' : err.message;\n  res.status(500).json({ success: false, message: msg });\n});" },
+  { sev:'m', title:'SPA returns HTTP 200 for broken/deleted pages', tag:'navigation',
+    symptom:'Navigating to a deleted page shows a blank page, but DevTools shows status 200 — not 404.',
+    cause:'Express catch-all serves index.html for every unknown route, defaulting to 200.',
+    fix:'Configure the catch-all to return status 404 even when serving the SPA shell.',
+    bad:"// Always returns 200 — even for /this-page-does-not-exist\napp.get('*', (req, res) => res.sendFile('index.html'));",
+    good:"// Return 404 status for unknown routes\napp.get('*', (req, res) => {\n  res.status(404).sendFile(path.join(__dirname, 'index.html'));\n});" },
+  { sev:'m', title:'Active nav state not updated when route changes', tag:'navigation/ui',
+    symptom:'User navigates to /products but the Home link is still highlighted in the navbar.',
+    cause:'Active class is set once at page load and never updated on route change (common SPA bug).',
+    fix:'Subscribe to router events and recompute active state whenever the URL changes.',
+    bad:"// Set once, never updated again\ndocument.querySelector('[href=\"/\"]').classList.add('active');",
+    good:"// React Router — declarative active state\n<NavLink to=\"/products\"\n  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>\n  Products\n</NavLink>" },
+  { sev:'m', title:'Double form submission creates duplicate records', tag:'forms/api',
+    symptom:'User clicks Submit twice quickly — two identical records appear in the database.',
+    cause:'Submit button not disabled after first click. No server-side deduplication.',
+    fix:'Disable the button immediately on first click. Re-enable it only after the response.',
+    bad:"form.onsubmit = () => {\n  fetch('/api/products', { method: 'POST', body });\n  // Button stays enabled — user can click again!",
+    good:"form.onsubmit = async (e) => {\n  btn.disabled = true;\n  try { await fetch('/api/products', { method: 'POST', body }); }\n  finally { btn.disabled = false; }\n};" },
+  { sev:'m', title:'API returns error message with wrong status code (200)', tag:'api',
+    symptom:'Client receives { "success": false, "message": "Not found" } but status is 200. Client treats it as success.',
+    cause:'Developer forgot to call res.status() before res.json() — defaults to 200.',
+    fix:'Always set the status code explicitly before any error response.',
+    bad:"// Sends 200 with error body — very confusing!\nif (!product) {\n  return res.json({ success: false, message: 'Not found' }); \n}",
+    good:"if (!product) {\n  return res.status(404).json({ success: false, message: 'Not found' });\n}" },
+  { sev:'l', title:'Anchor links (#section) fail in SPAs', tag:'navigation',
+    symptom:'Clicking a #section link does nothing, or scrolls to the wrong position.',
+    cause:'JS router intercepts hash links and navigates instead of scrolling, or content loads asynchronously after scroll fires.',
+    fix:'Use scrollIntoView() after content is rendered, or configure router to pass through hash links.',
+    bad:"// Content not loaded yet when this runs\ndocument.querySelector(window.location.hash)?.scrollIntoView();",
+    good:"// Wait for content to render before scrolling\nsetTimeout(() => {\n  document.querySelector(window.location.hash)\n    ?.scrollIntoView({ behavior: 'smooth' });\n}, 100);" },
+  { sev:'l', title:'Redirect loop — browser shows "Too many redirects"', tag:'navigation',
+    symptom:'Browser shows "ERR_TOO_MANY_REDIRECTS". Network tab shows 301→301→301 infinitely.',
+    cause:'Both the old and new URL redirect to each other (e.g., www↔non-www, http↔https misconfigured).',
+    fix:'Ensure redirects are strictly one-directional. Test with curl -L --max-redirs 10 URL.',
+    bad:"// www redirects to non-www, AND non-www redirects to www\n// → infinite loop",
+    good:"// One direction only:\nif (req.hostname.startsWith('www.')) {\n  return res.redirect(301, `https://example.com${req.path}`);\n}\n// Non-www never redirects back" },
+];
+
+const bc = document.getElementById('bug-container');
+bugs.forEach((b, i) => {
+  const sev = b.sev === 'h' ? 'sev-h' : b.sev === 'm' ? 'sev-m' : 'sev-l';
+  const sevLabel = b.sev === 'h' ? 'HIGH' : b.sev === 'm' ? 'MED' : 'LOW';
+  const wrap = document.createElement('div'); wrap.className = 'bug-item';
+  const head = document.createElement('div'); head.className = 'bug-head';
+  head.innerHTML = `<span class="bug-sev ${sev}">${sevLabel}</span><span class="bug-title">${b.title}</span><span class="bug-tag">${b.tag}</span><span class="bug-arrow" id="ba-${i}">▼</span>`;
+  const body = document.createElement('div'); body.className = 'bug-body';
+  body.innerHTML = `
+    <p><strong>Symptom:</strong> ${b.symptom}</p>
+    <p><strong>Root cause:</strong> ${b.cause}</p>
+    <p><strong>Fix:</strong> ${b.fix}</p>
+    <p style="color:var(--red);margin-top:10px">❌ Buggy:</p>
+    <div class="bug-code bc-bad">${b.bad}</div>
+    <p style="color:var(--green);margin-top:6px">✓ Fixed:</p>
+    <div class="bug-code bc-good">${b.good}</div>`;
+  head.onclick = () => {
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.bug-body.open').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.bug-arrow').forEach(a => a.style.transform = '');
+    if (!isOpen) { body.classList.add('open'); document.getElementById('ba-'+i).style.transform = 'rotate(180deg)'; }
+  };
+  wrap.appendChild(head); wrap.appendChild(body); bc.appendChild(wrap);
+});
+
+// ── CHECKLIST ─────────────────────────────────────────
+const clItems = [
+  'All internal nav links navigate to the correct page',
+  'Active nav state updates on every route change (no stale highlight)',
+  'Browser Back and Forward buttons work correctly',
+  'Pasting a deep URL directly loads the correct page',
+  'Refreshing the page keeps you on the same page (not home)',
+  'All external links open in a new tab',
+  'External links have rel="noopener noreferrer"',
+  'No broken links — zero 404 errors on any nav link',
+  'Anchor (#section) links scroll to the correct element',
+  'Redirect chains resolve in max 2 hops (no loops)',
+  'Protected routes redirect to login when not authenticated',
+  'After login, user is redirected back to the page they requested',
+  '200 OK returns correct data with correct Content-Type',
+  '201 Created response includes Location header with new resource URL',
+  '400 Bad Request returns specific error messages per missing/invalid field',
+  '401 Unauthorized returned for missing or expired auth token',
+  '403 Forbidden returned for wrong role — NOT 401 or 404',
+  '404 Not Found returned for non-existent IDs and unknown routes',
+  '500 errors do NOT expose stack traces or file paths in production',
+  'Server logs capture full error details internally (check server terminal)',
+  'Submit button is disabled on first click (no duplicate submissions)',
+  'No open redirect via ?redirect= or similar URL parameters',
+  'All API errors return the correct HTTP status code (not always 200)',
+  'Rate limiting returns 429 with Retry-After header',
+];
+
+const clList = document.getElementById('cl-list');
+let checked = new Set();
+
+clItems.forEach((txt, i) => {
+  const li = document.createElement('li'); li.className = 'ci';
+  li.innerHTML = `<div class="cbox" id="cb-${i}"></div><span>${txt}</span>`;
+  li.onclick = () => {
+    if (checked.has(i)) {
+      checked.delete(i); li.classList.remove('done');
+      document.getElementById('cb-'+i).textContent = '';
+    } else {
+      checked.add(i); li.classList.add('done');
+      document.getElementById('cb-'+i).textContent = '✓';
+    }
+    const n = checked.size, t = clItems.length;
+    document.getElementById('cl-label').textContent = `${n} / ${t} completed`;
+    document.getElementById('cl-prog').style.width = `${Math.round(n/t*100)}%`;
+  };
+  clList.appendChild(li);
+});
+
+function resetCl() {
+  checked.clear();
+  document.querySelectorAll('.ci').forEach(li => { li.classList.remove('done'); li.querySelector('.cbox').textContent = ''; });
+  document.getElementById('cl-label').textContent = `0 / ${clItems.length} completed`;
+  document.getElementById('cl-prog').style.width = '0%';
+}
+</script>
+</body>
+</html>
